@@ -1,0 +1,35 @@
+version: '3.14'
+
+services:
+
+  cheese_radar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - infra_network
+
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - infra_network
+
+
+volumes:
+  mongo_data:
+
+
+networks:
+  infra_network:
+    driver: bridge

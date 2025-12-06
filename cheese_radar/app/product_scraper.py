@@ -6,13 +6,13 @@ import undetected_chromedriver as uc
 from stores import *
 from utils import *
 from constants import *
+from mongo import mongodb_handler
 
 
 class ProductScraper:
     def __init__(self, store_scraper):
         self.store = store_scraper
         self.driver = None
-        self.json_filename = f"data/{self.store.store_name}_products.json"
         self.logger = get_logger(self.__class__.__name__)
 
     def _setup_driver(self):
@@ -45,6 +45,7 @@ class ProductScraper:
             "profile.default_content_settings.popups": 0,
         }
         options.add_experimental_option("prefs", prefs)
+        options.binary_location = "/usr/bin/google-chrome"
 
         driver = uc.Chrome(
             options=options,
@@ -63,44 +64,8 @@ class ProductScraper:
         self.logger.info(f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}...")
         return driver
 
-    def _pyaterochka_page_load(self, url, page_num=None):
-        """Специальная загрузка страницы для Пятерочки"""
-        self.logger.info(f"[{self.store.store_name}] Загрузка страницы {page_num if page_num else ''}: {url}")
-
-        try:
-            self.driver.get(url)
-
-            # Специальная задержка с анти-бан защитой
-            pyaterochka_anti_ban_delay(self.driver, page_num)
-
-            # Дополнительное человеческое поведение
-            if random.random() < 0.6:
-                simulate_human_mouse_movement(self.driver)
-
-            if random.random() < 0.5:
-                random_scroll_behavior(self.driver)
-
-            # Проверяем не заблокировали ли нас
-            page_source = self.driver.page_source.lower()
-            if "доступ ограничен" in page_source or "blocked" in page_source or "captcha" in page_source:
-                self.logger.warning(f"[{self.store.store_name}] Возможная блокировка обнаружена")
-                # Делаем дополнительную паузу и пробуем обойти
-                time.sleep(random.uniform(10, 20))
-
-                # Пробуем другой User-Agent
-                new_ua = get_random_user_agent()
-                self.driver.execute_script(f"Object.defineProperty(navigator, 'userAgent', {{get: () => '{new_ua}'}});")
-
-                # Перезагружаем страницу
-                self.driver.refresh()
-                time.sleep(random.uniform(5, 10))
-
-        except Exception as e:
-            self.logger.error(f"[{self.store.store_name}] Ошибка при загрузке страницы: {e}")
-            raise
-
     def _normal_page_load(self, url):
-        """Обычная загрузка страницы для других магазинов"""
+        """Обычная загрузка страницы магазинов"""
         self.logger.info(f"[{self.store.store_name}] Загрузка страницы: {url}")
         self.driver.get(url)
         time.sleep(PAGE_LOAD_PAUSE_TIME)
@@ -116,12 +81,6 @@ class ProductScraper:
 
         while scroll_attempts < max_scroll_attempts:
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-            # Для Пятерочки рандомная задержка
-            # if isinstance(self.store, PyaterochkaScraper):
-            #     time.sleep(random.uniform(1.5, 3.5))
-            # else:
-            #     time.sleep(random.uniform(1.5, 2.5))
 
             self.driver.execute_script("window.scrollBy(0, -100);")
             time.sleep(random.uniform(0.5, 1))
@@ -140,52 +99,53 @@ class ProductScraper:
 
         self.logger.info(f"[{self.store.store_name}] Скроллинг завершен")
 
-    def _load_existing_products(self):
-        """Загружает существующие товары из JSON"""
+    def _load_existing_products_from_mongo(self):
+        """Загружает существующие товары из MongoDB"""
         all_products = []
         seen_products = set()
 
-        if not os.path.exists(self.json_filename):
-            self.logger.info(f"[{self.store.store_name}] Файл {self.json_filename} не существует, создаем новый")
-            return all_products, seen_products
-
         try:
-            with open(self.json_filename, 'r', encoding='utf-8') as jsonfile:
-                content = jsonfile.read().strip()
+            # Получаем все товары для этого магазина из MongoDB
+            existing_products = mongodb_handler.get_store_products(self.store.store_name)
 
-                if not content:
-                    self.logger.info(f"[{self.store.store_name}] Файл {self.json_filename} пуст")
-                    return all_products, seen_products
+            if not existing_products:
+                self.logger.info(
+                    f"[{self.store.store_name}] В MongoDB нет товаров для магазина {self.store.store_name}")
+                return all_products, seen_products
 
-                all_products = json.loads(content)
+            self.logger.info(
+                f"[{self.store.store_name}] Загружено {len(existing_products)} существующих товаров из MongoDB")
 
-                # Проверяем, что это список
-                if not isinstance(all_products, list):
-                    self.logger.warning(f"[{self.store.store_name}] Неверный формат JSON, ожидался список")
-                    all_products = []
-                else:
-                    self.logger.info(f"[{self.store.store_name}] Загружено {len(all_products)} существующих товаров")
+            for product in existing_products:
+                try:
+                    name = product.get('name', '').strip()
+                    price = str(product.get('price', '')).strip()
+                    store = str(product.get('store', '')).strip()
+                    date_time = str(product.get('date_time', '')).strip()
 
-                    for product in all_products:
-                        try:
-                            name = product.get('name', '').strip()
-                            price = str(product.get('price', '')).strip()
-                            store = str(product.get('store', '')).strip()
-                            date_time = str(product.get('date_time', '')).strip()
+                    if name and price and store:
+                        # Формируем ключ для проверки уникальности
+                        # Используем только name и price, так как date_time меняется при каждом парсинге
+                        key = f"{name}_{price}_{store}"
+                        seen_products.add(key)
 
-                            if name and price and store and date_time:
-                                key = f"{name}_{price}_{store}_{date_time}"
-                                seen_products.add(key)
-                        except Exception as e:
-                            self.logger.error(
-                                f"[{self.store.store_name}] Ошибка при обработке существующего товара: {e}")
-                            continue
+                        # Сохраняем продукт для возврата
+                        all_products.append({
+                            "name": name,
+                            "price": price,
+                            "store": store,
+                            "date_time": date_time,
+                            "discount": product.get('discount'),
+                            "rating": product.get('rating')
+                        })
 
-        except json.JSONDecodeError as e:
-            self.logger.error(f"[{self.store.store_name}] Ошибка декодирования JSON: {e}")
-            all_products = []
+                except Exception as e:
+                    self.logger.error(
+                        f"[{self.store.store_name}] Ошибка при обработке существующего товара из MongoDB: {e}")
+                    continue
+
         except Exception as e:
-            self.logger.error(f"[{self.store.store_name}] Ошибка при загрузке JSON: {e}")
+            self.logger.error(f"[{self.store.store_name}] Ошибка загрузки из MongoDB: {e}")
             all_products = []
 
         return all_products, seen_products
@@ -245,14 +205,17 @@ class ProductScraper:
 
         return parsed_products
 
-    def scrape_to_json(self):
-        """Основной метод скрейпинга"""
+    def scrape(self):
+        """Основной метод скрейпинга с использованием MongoDB"""
         all_products = []
         seen_products = set()
 
         try:
-            # Загружаем существующие товары
-            all_products, seen_products = self._load_existing_products()
+            # Загружаем существующие товары из MongoDB
+            all_products, seen_products = self._load_existing_products_from_mongo()
+
+            # Логируем сколько уже есть в базе
+            self.logger.info(f"[{self.store.store_name}] Уже в базе: {len(all_products)} товаров")
 
             # Инициализация драйвера
             self.driver = self._setup_driver()
@@ -261,6 +224,7 @@ class ProductScraper:
             self.store.before_scrape(self.driver)
 
             new_products_total = 0
+            scraped_products = []
 
             # Для магазинов с пагинацией
             if isinstance(self.store, (MagnitScraper, LentaScraper)):
@@ -284,23 +248,23 @@ class ProductScraper:
                             empty_pages_count = 0
 
                             for product in parsed_products:
-                                # Используем имя, цену и магазин для сравнения
-                                product_key = f"{product['name']}_{product['price']}_{product['store']}"
+                                product_key = f"""{product['name']}_{product['price']}
+                                                 _{product['store']}_{product['date_time']}"""
 
                                 if not product_key or product_key in seen_products:
                                     continue
 
                                 seen_products.add(product_key)
                                 all_products.append(product)
+                                scraped_products.append(product)
                                 new_products_total += 1
                                 self.logger.debug(
-                                    f"[{self.store.store_name}] Добавлен новый товар: {product['name'][:50]}... - {product['price']} руб. ({product['date_time']})")
+                                    f"[{self.store.store_name}] Новый товар: {product['name'][:50]}... - {product['price']} руб.")
 
                             self.logger.info(
                                 f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}")
 
                         page += 1
-
                         time.sleep(random.uniform(SHORT_PAUSE_TIME - 1, SHORT_PAUSE_TIME + 1))
 
                     except Exception as e:
@@ -337,9 +301,8 @@ class ProductScraper:
 
                             seen_products.add(product_key)
                             all_products.append(product)
+                            scraped_products.append(product)
                             new_products_total += 1
-                            # self.logger.info(
-                            #     f"[{self.store.store_name}] Добавлен товар: {product['name'][:50]}... - {product['price']} руб.")
 
                         self.logger.info(
                             f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}")
@@ -352,34 +315,23 @@ class ProductScraper:
                     page += 1
                     time.sleep(LONG_PAUSE_TIME)
 
-            # Сохранение результатов
-            try:
-                # Сортируем товары по дате (новые сверху)
-                all_products.sort(key=lambda x: x.get('date_time', ''), reverse=True)
+            # Сохранение новых товаров в MongoDB
+            if scraped_products:
+                mongo_processed, mongo_new = mongodb_handler.save_products(
+                    scraped_products,
+                    self.store.store_name
+                )
+                self.logger.info(f"[{self.store.store_name}] В MongoDB добавлено {mongo_new} новых товаров")
+            else:
+                mongo_processed, mongo_new = 0, 0
+                self.logger.warning(f"[{self.store.store_name}] Нет новых товаров для сохранения")
 
-                with open(self.json_filename, 'w', encoding='utf-8') as jsonfile:
-                    json.dump(all_products, jsonfile, ensure_ascii=False, indent=2)
+            self.logger.info(f"[{self.store.store_name}] ИТОГИ:")
+            self.logger.info(f"[{self.store.store_name}]   Всего в базе: {len(all_products)} товаров")
+            self.logger.info(f"[{self.store.store_name}]   Найдено новых: {new_products_total}")
+            self.logger.info(f"[{self.store.store_name}]   Сохранено в MongoDB: {mongo_new}")
 
-                self.logger.info(f"[{self.store.store_name}] Данные сохранены в {self.json_filename}")
-                self.logger.info(f"[{self.store.store_name}] Всего товаров: {len(all_products)}")
-                self.logger.info(f"[{self.store.store_name}] Новых добавлено: {new_products_total}")
-
-                # Записываем статистику в лог
-                if all_products:
-                    # Берем самую свежую дату
-                    latest_date = max([p.get('date_time', '') for p in all_products if p.get('date_time')])
-                    self.logger.info(f"[{self.store.store_name}] Самая свежая запись: {latest_date}")
-
-            except Exception as e:
-                self.logger.error(f"[{self.store.store_name}] Ошибка при сохранении JSON: {e}")
-
-                try:
-                    temp_filename = f"{self.json_filename}.temp"
-                    with open(temp_filename, 'w', encoding='utf-8') as jsonfile:
-                        json.dump(all_products, jsonfile, ensure_ascii=False, indent=2)
-                    self.logger.info(f"[{self.store.store_name}] Данные сохранены во временный файл: {temp_filename}")
-                except:
-                    self.logger.error(f"[{self.store.store_name}] Не удалось сохранить даже во временный файл")
+            return len(all_products), mongo_new
 
         except Exception as e:
             self.logger.error(f"[{self.store.store_name}] Критическая ошибка: {e}")

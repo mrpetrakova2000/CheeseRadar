@@ -11,20 +11,13 @@ from constants import *
 # Настройка логирования
 def setup_logging():
     """Настраивает логирование в файл и консоль"""
-    # Создаем логгер корневого уровня
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    # Форматтер
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-
-    # Хендлер для файла
-    file_handler = logging.FileHandler("scraper.log", encoding='utf-8', mode='a')
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(formatter)
 
     # Хендлер для консоли
     console_handler = logging.StreamHandler()
@@ -34,11 +27,8 @@ def setup_logging():
     # Удаляем существующие хендлеры, если есть
     logger.handlers = []
 
-    # Добавляем хендлеры к логгеру
-    logger.addHandler(file_handler)
     logger.addHandler(console_handler)
 
-    # Отключаем логирование от сторонних библиотек
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("selenium").setLevel(logging.WARNING)
     logging.getLogger("undetected_chromedriver").setLevel(logging.WARNING)

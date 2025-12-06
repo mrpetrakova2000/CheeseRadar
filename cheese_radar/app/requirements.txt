@@ -1,8 +1,9 @@
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
 undetected-chromedriver==3.5.5
-beautifulsoup4==4.12.3
-python-dotenv==1.0.1
-selenium==4.27.1
-pydantic==2.10.3
-pymongo
+selenium==4.15.2
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic>=2.0.0,<2.5.0
+beautifulsoup4==4.12.2
+python-dotenv==1.0.0
+pymongo==4.5.0
+requests==2.31.0

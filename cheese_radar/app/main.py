@@ -17,32 +17,39 @@ app = FastAPI()
 class ScraperRequest(BaseModel):
     store: str
 
+
 @app.post("/scrape")
 async def scrape_store(request: ScraperRequest):
+    logger.info(f"Запрос на скрапинг: {request.store}")
+
     store_map = {
-        "magnit": MagnitScraper,
-        "perekrestok": PerekrestokScraper,
-        "lenta": LentaScraper,
+        "magnit": ("Магнит", MagnitScraper),
+        "perekrestok": ("Перекрёсток", PerekrestokScraper),
+        "lenta": ("Лента", LentaScraper),
     }
 
     if request.store not in store_map:
         raise HTTPException(status_code=400, detail=f"Неизвестный магазин: {request.store}")
 
     try:
-        scraper_class = store_map[request.store]
+        display_name, scraper_class = store_map[request.store]
+        logger.info(f"Запуск скрапера для магазина: {display_name}")
+
         scraper_instance = scraper_class()
 
         product_scraper = ProductScraper(scraper_instance)
-        products_count, new_products = product_scraper.scrape_to_json()
+        total_in_db, new_saved = product_scraper.scrape()  # теперь метод называется scrape()
 
         return {
-            "store": request.store,
-            "products_count": products_count,
-            "new_products": new_products,
+            "status": "success",
+            "store": display_name,
+            "total_in_database": total_in_db,
+            "new_products_saved": new_saved
         }
+
     except Exception as e:
+        logger.error(f"Ошибка при скрапинге {request.store}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8081, reload=True, workers=1)
