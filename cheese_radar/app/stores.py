@@ -6,6 +6,7 @@ from utils import *
 
 load_dotenv()
 
+
 class StoreScraper(ABC):
     def __init__(self):
         self.store_name = ""
@@ -113,8 +114,8 @@ class PerekrestokScraper(StoreScraper):
         # Проверка доступа
         page_source = driver.page_source.lower()
         if "forbidden" in page_source or "проверка безопасности" in page_source:
-            self.logger.error(f"[{self.store_name}] 403! Cookie устарела — обнови её вручную в браузере")
-            raise Exception("Cookie мертва")
+            self.logger.error(f"[{self.store_name}] 403! Cookie устарела - обнови её вручную в браузере")
+            raise Exception("Cookie устарела")
         else:
             self.logger.info(f"[{self.store_name}] Начало парсинга")
 
@@ -143,13 +144,13 @@ class LentaScraper(StoreScraper):
             return f"{self.base_url}page/{page}/"
 
     def before_scrape(self, driver):
-        """Настройка сессии для Ленты с полным набором куки и headers"""
+        """Настройка сессии для Ленты """
         self.logger.info(f"[{self.store_name}] Настройка сессии для Ленты...")
 
         try:
             # Первая загрузка для инициализации
             driver.get("https://www.google.com/")
-            time.sleep(SHORT_PAUSE_TIME)
+            time.sleep(BEFORE_SCRAPE_PAUSE_TIME)
 
             # Устанавливаем дополнительные headers через JavaScript
             driver.execute_script("""
@@ -202,24 +203,6 @@ class LentaScraper(StoreScraper):
                     "value": """{"t":"pickup","ids":false,"ma":{"i":3241,"a":"0214","t":"TK214","af":"Санкт-Петербург, п. Бугры, Южная ул., 5","ri":3,"mt":"HM","s":false}}""",
                     "domain": ".lenta.com",
                     "path": "/"
-                },
-                {
-                    "name": "_ga",
-                    "value": "GA1.1." + str(random.randint(1000000000, 9999999999)) + "." + str(int(time.time())),
-                    "domain": ".lenta.com",
-                    "path": "/"
-                },
-                {
-                    "name": "_gid",
-                    "value": "GA1.1." + str(random.randint(1000000000, 9999999999)) + "." + str(int(time.time())),
-                    "domain": ".lenta.com",
-                    "path": "/"
-                },
-                {
-                    "name": "_gat",
-                    "value": "1",
-                    "domain": ".lenta.com",
-                    "path": "/"
                 }
             ]
 
@@ -246,7 +229,6 @@ class LentaScraper(StoreScraper):
 
         except Exception as e:
             self.logger.error(f"[{self.store_name}] Ошибка в настройке сессии: {e}")
-            # Пробуем продолжить, возможно страница все равно загрузится
 
     def _simulate_human_behavior(self, driver):
         """Имитация человеческого поведения"""
@@ -263,15 +245,12 @@ class LentaScraper(StoreScraper):
                 """)
                 time.sleep(random.uniform(0.5, 1.5))
 
-            # Возвращаемся немного назад
             driver.execute_script("window.scrollTo({top: 200, behavior: 'smooth'});")
             time.sleep(1)
 
-            # Имитация движения мыши
             actions = ActionChains(driver)
             window_size = driver.get_window_size()
 
-            # Случайные движения мыши
             for _ in range(3):
                 x = random.randint(50, window_size['width'] - 50)
                 y = random.randint(50, window_size['height'] - 100)
@@ -329,7 +308,6 @@ class LentaScraper(StoreScraper):
                     oldSend.call(this, body);
                 };
                 
-                // Также для fetch
                 const oldFetch = window.fetch;
                 window.fetch = function(...args) {
                     if (args[1]) {

@@ -1,2 +1,6 @@
 **/.env
 .idea/
+/cheese_radar/airflow/logs/
+/cheese_radar/airflow/plugins/
+/cheese_radar/app/.pytest_cache/
+/.vscode/

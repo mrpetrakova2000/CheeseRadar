@@ -19,12 +19,10 @@ def setup_logging():
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
-    # Хендлер для консоли
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
 
-    # Удаляем существующие хендлеры, если есть
     logger.handlers = []
 
     logger.addHandler(console_handler)
@@ -70,7 +68,7 @@ def simulate_human_interaction(driver):
 
 
 def simulate_human_mouse_movement(driver):
-    """Имитация человеческого движения мыши (улучшенная)"""
+    """Имитация человеческого движения мыши"""
     try:
         actions = ActionChains(driver)
 
@@ -102,7 +100,7 @@ def simulate_human_mouse_movement(driver):
             pause_time = random.uniform(0.1, 0.5)
             actions.pause(pause_time)
 
-            # Иногда кликаем (30% вероятность)
+            # Иногда кликаем
             if random.random() < 0.3:
                 actions.click()
                 actions.pause(random.uniform(0.2, 0.8))
@@ -110,13 +108,12 @@ def simulate_human_mouse_movement(driver):
         actions.perform()
 
     except Exception as e:
-        pass  # Игнорируем ошибки движения мыши
+        pass
 
 
 def random_scroll_behavior(driver):
-    """Случайный скроллинг как у человека (улучшенный)"""
+    """Случайный скроллинг как у человека"""
     try:
-        # Случайное количество скроллов
         scroll_count = random.randint(1, 4)
 
         for i in range(scroll_count):
@@ -163,7 +160,7 @@ def random_scroll_behavior(driver):
             time.sleep(random.uniform(0.5, 1.5))
 
     except Exception as e:
-        pass  # Игнорируем ошибки скроллинга
+        pass
 
 
 def simulate_reading_time(driver, min_time=2, max_time=5):
@@ -423,42 +420,4 @@ def detect_blocked_page(driver):
         return False
 
     except Exception as e:
-        return False
-
-
-def handle_blocked_page(driver, logger):
-    """Обработка заблокированной страницы"""
-    logger.warning("[Пятерочка] Обнаружена блокировка или капча")
-
-    try:
-        # 1. Делаем длительную паузу
-        long_pause = random.uniform(30, 60)
-        logger.info(f"[Пятерочка] Длительная пауза для обхода блокировки: {long_pause:.1f} сек")
-        time.sleep(long_pause)
-
-        # 2. Меняем User-Agent
-        new_ua = get_random_user_agent()
-        driver.execute_script(f"Object.defineProperty(navigator, 'userAgent', {{get: () => '{new_ua}'}});")
-        logger.info(f"[Пятерочка] User-Agent изменен")
-
-        # 3. Меняем размер окна
-        change_viewport_randomly(driver)
-
-        # 4. Имитируем человеческое поведение
-        simulate_browsing_session(driver, 5, 15)
-
-        # 5. Обновляем страницу
-        driver.refresh()
-        time.sleep(random.uniform(5, 10))
-
-        # 6. Проверяем, ушла ли блокировка
-        if detect_blocked_page(driver):
-            logger.error("[Пятерочка] Блокировка не снята, требуется ручное вмешательство")
-            return False
-        else:
-            logger.info("[Пятерочка] Блокировка успешно обойдена")
-            return True
-
-    except Exception as e:
-        logger.error(f"[Пятерочка] Ошибка при обработке блокировки: {e}")
         return False

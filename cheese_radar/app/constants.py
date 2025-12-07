@@ -1,8 +1,5 @@
-import os
 import re
-import random
 
-# --- Пути и URL ---
 STORE_URLS = {
     "pyaterochka": "https://5ka.ru/catalog/syr--251C13095/",
     "magnit": "https://magnit.ru/catalog/63991-testmmsyry?shopCode={shop_code}&shopType=1",
@@ -10,7 +7,6 @@ STORE_URLS = {
     "lenta": "https://lenta.com/catalog/syry-2/"
 }
 
-# --- Селекторы ---
 SELECTORS = {
     "pyaterochka": {
         "product": lambda tag: tag.get('data-qa', '') and re.compile(r'product-card-\d+$').match(tag.get('data-qa', '')),
@@ -43,7 +39,6 @@ SELECTORS = {
     }
 }
 
-# --- Параметры пагинации ---
 PAGINATION_PARAMS = {
     "pyaterochka": "?page=",
     "magnit": "&page=",
@@ -51,7 +46,6 @@ PAGINATION_PARAMS = {
     "lenta": "/page/"
 }
 
-# --- Тайминги (базовые) ---
 PAGE_LOAD_PAUSE_TIME = 5
 BEFORE_SCRAPE_PAUSE_TIME = 3
 COOKIE_PAUSE_TIME = 0.5
@@ -59,23 +53,21 @@ SHORT_PAUSE_TIME = 2
 LONG_PAUSE_TIME = 10
 SCROLL_PAUSE_TIME = 3
 
-# --- Специальные настройки для Пятерочки (усиленные) ---
 PYATEROCHKA_TIMING = {
-    "MIN_PAGE_LOAD": 12,           # Увеличено
-    "MAX_PAGE_LOAD": 25,           # Увеличено
-    "MIN_BETWEEN_PAGES": 5,        # Увеличено
-    "MAX_BETWEEN_PAGES": 15,       # Увеличено
+    "MIN_PAGE_LOAD": 12,           
+    "MAX_PAGE_LOAD": 25,           
+    "MIN_BETWEEN_PAGES": 5,        
+    "MAX_BETWEEN_PAGES": 15,       
     "RANDOM_MOUSE_MOVE": 0.8,
     "RANDOM_SCROLL_CHANCE": 0.7,
     "MOUSE_MOVE_DELAY": 0.3,
-    "MAX_PAGES_PER_SESSION": 4,    # Максимум 4 страницы за сессию
-    "SESSION_BREAK_MIN": 30,       # Перерыв между сессиями
+    "MAX_PAGES_PER_SESSION": 4,
+    "SESSION_BREAK_MIN": 30,
     "SESSION_BREAK_MAX": 60,
-    "RANDOM_PAGE_ORDER": True,     # Случайный порядок страниц
-    "CHANGE_USER_AGENT_EVERY": 2,  # Менять User-Agent каждые N страниц
+    "RANDOM_PAGE_ORDER": True,
+    "CHANGE_USER_AGENT_EVERY": 2,
 }
 
-# --- Настройки для защиты от бана (усиленные) ---
 ANTI_BAN_SETTINGS = {
     "random_mouse_movements": True,
     "random_scrolls": True,
@@ -83,13 +75,12 @@ ANTI_BAN_SETTINGS = {
     "human_like_typing": False,
     "random_click_on_body": True,
     "change_viewport": True,
-    "use_random_proxy": False,      # Можно добавить прокси позже
+    "use_random_proxy": False,
     "rotate_user_agent": True,
     "simulate_reading": True,
     "random_browsing_patterns": True,
 }
 
-# --- User Agents (больше вариантов) ---
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -103,7 +94,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
 ]
 
-# --- Дополнительные настройки ---
 MAX_EMPTY_PAGES = 3
 MAX_SCROLL_ATTEMPTS = 8
-PROXY_LIST = []  # Можно заполнить позже
+PROXY_LIST = []

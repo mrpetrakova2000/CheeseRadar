@@ -30,16 +30,5 @@ def scrape_magnit():
 
 def scrape_perekrestok():
     """Скрапинг Перекрестка"""
-    sleep(5)  # Пауза
+    sleep(5)
     return call_scraper_api("scrape", {"store": "perekrestok"})
-
-
-def scrape_lenta():
-    """Скрапинг Ленты (с обработкой ошибок)"""
-    sleep(10)  # Пауза перед Лентой
-
-    try:
-        return call_scraper_api("scrape", {"store": "lenta"})
-    except:
-        logging.warning("Лента сломалась, пропускаем")
-        return {"store": "Лента", "status": "skipped"}

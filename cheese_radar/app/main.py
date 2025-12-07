@@ -38,7 +38,7 @@ async def scrape_store(request: ScraperRequest):
         scraper_instance = scraper_class()
 
         product_scraper = ProductScraper(scraper_instance)
-        total_in_db, new_saved = product_scraper.scrape()  # теперь метод называется scrape()
+        total_in_db, new_saved = product_scraper.scrape()
 
         return {
             "status": "success",
