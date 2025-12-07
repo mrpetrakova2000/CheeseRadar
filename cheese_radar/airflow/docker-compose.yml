@@ -4,7 +4,7 @@ x-airflow-common: &airflow-common
   build: .
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
@@ -21,6 +21,7 @@ x-airflow-common: &airflow-common
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     - postgres
+    - redis
 
 services:
   postgres:
@@ -33,8 +34,19 @@ services:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 30s
+      retries: 30
+    restart: always
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
-      retries: 5
+      timeout: 30s
+      retries: 50
     restart: always
 
   airflow-webserver:
@@ -43,20 +55,15 @@ services:
     ports:
       - 8080:8080
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
-      interval: 10s
-      timeout: 10s
+      test: [ "CMD", "curl", "--fail" ]
+      interval: 30s
+      timeout: 30s
       retries: 5
     restart: always
 
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
-    restart: always
-
-  airflow-worker:
-    <<: *airflow-common
-    command: celery worker
     restart: always
 
   airflow-init:
