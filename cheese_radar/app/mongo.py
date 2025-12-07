@@ -8,7 +8,7 @@ load_dotenv()
 
 
 class MongoDBHandler:
-    """Обработчик для работы с MongoDB"""
+    """Обработчик для работы с MongoDB - всегда пишет все данные"""
 
     def __init__(self):
         self.client = None
@@ -20,26 +20,21 @@ class MongoDBHandler:
     def _connect(self):
         """Подключение к MongoDB"""
         try:
-            MONGO_CONFIG = {
-                "username": os.getenv("MONGO_INITDB_ROOT_USERNAME"),
-                "password": os.getenv("MONGO_INITDB_ROOT_PASSWORD"),
-                "host": os.getenv("MONGO_HOST", "localhost"),
-                "port": int(os.getenv("MONGO_PORT", 27017)),
-                "authSource": "admin",
-            }
+            username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
+            password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+            host = os.getenv("MONGO_HOST", "localhost")
+            port = int(os.getenv("MONGO_PORT", 27017))
 
-            self.logger.info(f"Подключение к MongoDB: {MONGO_CONFIG['host']}:{MONGO_CONFIG['port']}")
+            self.logger.info(f"Подключение к MongoDB: {host}:{port}")
 
-            self.client = MongoClient(**MONGO_CONFIG)
+            self.client = MongoClient(
+                host=host,
+                port=port,
+                username=username,
+                password=password
+            )
             self.db = self.client["prod"]
             self.collection = self.db["products"]
-
-            # Индекс для ускорения поиска
-            self.collection.create_index([
-                ("store", 1),
-                ("name", 1),
-                ("price", 1)
-            ])
 
             self.logger.info("Подключение к MongoDB успешно")
 
@@ -49,77 +44,55 @@ class MongoDBHandler:
 
     def save_products(self, products, store_name):
         """
-        Сохраняет новые товары в MongoDB
+        Сохраняет все товары в MongoDB
 
         Returns:
-            tuple: (всего_товаров, новых_добавлено)
+            tuple: (всего товаров, сохранено товаров)
         """
         if not products:
+            self.logger.info(f"[{store_name}] Нет товаров для сохранения")
             return 0, 0
 
         try:
-            total_processed = 0
-            new_added = 0
+            total_processed = len(products)
             batch_to_insert = []
+            now = datetime.now()
 
             for product in products:
                 try:
-                    total_processed += 1
-
-                    # Проверяем уникальность
-                    query = {
+                    doc = {
+                        **product,
                         "store": store_name,
-                        "name": product.get("name"),
-                        "price": product.get("price")
+                        "scraped_at": now
                     }
 
-                    exists = self.collection.find_one(query)
-
-                    if not exists:
-                        doc = {
-                            **product,
-                            "store": store_name,
-                            "scraped_at": datetime.now(),
-                            "inserted_at": datetime.now()
-                        }
-
-                        batch_to_insert.append(doc)
-                        new_added += 1
+                    batch_to_insert.append(doc)
 
                 except Exception as e:
                     self.logger.error(f"[{store_name}] Ошибка обработки товара: {e}")
                     continue
 
-            # Вставляем новые товары
             if batch_to_insert:
                 result = self.collection.insert_many(batch_to_insert, ordered=False)
-                self.logger.info(f"[{store_name}] В MongoDB добавлено {len(result.inserted_ids)} товаров")
+                self.logger.info(f"[{store_name}] В MongoDB записано {len(result.inserted_ids)} товаров")
+                return total_processed, len(result.inserted_ids)
 
-            return total_processed, new_added
+            return total_processed, 0
 
         except Exception as e:
             self.logger.error(f"[{store_name}] Ошибка сохранения в MongoDB: {e}")
             return 0, 0
 
     def get_store_products(self, store_name, limit=10000):
-        """
-        Получает все товары для указанного магазина
-
-        Args:
-            store_name: название магазина
-            limit: максимальное количество товаров
-
-        Returns:
-            list: список товаров
-        """
-        if self.collection is None:  # ПРАВИЛЬНАЯ ПРОВЕРКА
+        """Получает все товары для указанного магазина"""
+        if self.collection is None:
             self.logger.warning("MongoDB не подключена")
             return []
 
         try:
             products = list(self.collection.find(
                 {"store": store_name},
-                {"_id": 0}  # исключаем поле _id
+                {"_id": 0}
             ).sort("scraped_at", -1).limit(limit))
 
             self.logger.info(f"Загружено {len(products)} товаров для магазина {store_name}")

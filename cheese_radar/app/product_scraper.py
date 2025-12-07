@@ -16,7 +16,7 @@ class ProductScraper:
         self.logger = get_logger(self.__class__.__name__)
 
     def _setup_driver(self):
-        """Настройка драйвера с улучшенной защитой"""
+        """Настройка драйвера"""
         self.logger.info(f"[{self.store.store_name}] Настройка драйвера...")
 
         options = uc.ChromeOptions()
@@ -33,11 +33,9 @@ class ProductScraper:
         options.add_argument('--password-store=basic')
         options.add_argument('--disable-extensions')
 
-        # Случайный User-Agent
         selected_ua = get_random_user_agent()
         options.add_argument(f'--user-agent={selected_ua}')
 
-        # Предпочтения
         prefs = {
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
@@ -102,7 +100,6 @@ class ProductScraper:
     def _load_existing_products_from_mongo(self):
         """Загружает существующие товары из MongoDB"""
         all_products = []
-        seen_products = set()
 
         try:
             # Получаем все товары для этого магазина из MongoDB
@@ -111,7 +108,7 @@ class ProductScraper:
             if not existing_products:
                 self.logger.info(
                     f"[{self.store.store_name}] В MongoDB нет товаров для магазина {self.store.store_name}")
-                return all_products, seen_products
+                return all_products
 
             self.logger.info(
                 f"[{self.store.store_name}] Загружено {len(existing_products)} существующих товаров из MongoDB")
@@ -124,10 +121,6 @@ class ProductScraper:
                     date_time = str(product.get('date_time', '')).strip()
 
                     if name and price and store:
-                        # Формируем ключ для проверки уникальности
-                        # Используем только name и price, так как date_time меняется при каждом парсинге
-                        key = f"{name}_{price}_{store}"
-                        seen_products.add(key)
 
                         # Сохраняем продукт для возврата
                         all_products.append({
@@ -148,7 +141,7 @@ class ProductScraper:
             self.logger.error(f"[{self.store.store_name}] Ошибка загрузки из MongoDB: {e}")
             all_products = []
 
-        return all_products, seen_products
+        return all_products
 
     def _parse_single_page(self):
         """Парсинг одной страницы"""
@@ -195,7 +188,7 @@ class ProductScraper:
                     "price": price,
                     "discount": discount,
                     "rating": rating,
-                    "date_time": current_datetime,  # Записываем точное время парсинга
+                    "date_time": current_datetime,
                     "store": self.store.store_name
                 })
 
@@ -207,15 +200,11 @@ class ProductScraper:
 
     def scrape(self):
         """Основной метод скрейпинга с использованием MongoDB"""
-        all_products = []
         seen_products = set()
 
         try:
             # Загружаем существующие товары из MongoDB
-            all_products, seen_products = self._load_existing_products_from_mongo()
-
-            # Логируем сколько уже есть в базе
-            self.logger.info(f"[{self.store.store_name}] Уже в базе: {len(all_products)} товаров")
+            all_products = self._load_existing_products_from_mongo()
 
             # Инициализация драйвера
             self.driver = self._setup_driver()
@@ -226,7 +215,6 @@ class ProductScraper:
             new_products_total = 0
             scraped_products = []
 
-            # Для магазинов с пагинацией
             if isinstance(self.store, (MagnitScraper, LentaScraper)):
                 page = 1
                 max_empty_pages = 2
@@ -248,8 +236,7 @@ class ProductScraper:
                             empty_pages_count = 0
 
                             for product in parsed_products:
-                                product_key = f"""{product['name']}_{product['price']}
-                                                 _{product['store']}_{product['date_time']}"""
+                                product_key = f"{product['name']}_{product['price']}_{product['store']}"
 
                                 if not product_key or product_key in seen_products:
                                     continue
