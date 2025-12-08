@@ -4,78 +4,28 @@ x-airflow-common: &airflow-common
   build: .
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__EXECUTOR: SequentialExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 10
+    AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: 'false'
+    AIRFLOW__CORE__PARALLELISM: '1'
+    AIRFLOW__WEBSERVER__WORKERS: '1'
+    PYTHONGC: '3'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
-    - ./plugins:/opt/airflow/plugins
     - ./requirements.txt:/docker-context-files/requirements.txt
-  user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    - postgres
-    - redis
+
+  user: "50000:0"
+  deploy:
+    resources:
+      limits:
+        memory: 500M
 
 services:
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-    volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow" ]
-      interval: 30s
-      retries: 30
-    restart: always
-
-  redis:
-    image: redis:latest
+  airflow:
+    <<: *airflow-common
     ports:
-      - 6379:6379
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 30s
-      retries: 50
-    restart: always
-
-  airflow-webserver:
-    <<: *airflow-common
-    command: webserver
-    ports:
-      - 8080:8080
-    healthcheck:
-      test: [ "CMD", "curl", "--fail" ]
-      interval: 30s
-      timeout: 30s
-      retries: 5
-    restart: always
-
-  airflow-scheduler:
-    <<: *airflow-common
-    command: scheduler
-    restart: always
-
-  airflow-init:
-    <<: *airflow-common
-    command: version
-    environment:
-      <<: *airflow-common-env
-      _AIRFLOW_DB_UPGRADE: 'true'
-      _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: "${AIRFLOW_WWW_USER_USERNAME}"
-      _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_WWW_USER_PASSWORD}"
-
-
-volumes:
-  postgres-db-volume:
+      - "8080:8080"

@@ -1,4 +1,4 @@
-FROM apache/airflow:2.10.5
+FROM python:3.11-slim-bookworm
 
 RUN mkdir -p /opt/airflow/logs/scheduler && \
     chown -R airflow:0 /opt/airflow/logs && \
