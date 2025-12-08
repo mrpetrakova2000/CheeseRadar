@@ -120,7 +120,7 @@ class PerekrestokScraper(StoreScraper):
             self.logger.info(f"[{self.store_name}] Начало парсинга")
 
         # Скроллинг для загрузки всех товаров
-        for _ in range(6):
+        for _ in range(4):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(SCROLL_PAUSE_TIME)
 
