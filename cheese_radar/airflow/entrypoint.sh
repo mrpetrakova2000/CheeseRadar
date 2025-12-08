@@ -17,10 +17,10 @@ echo "Airflow DB: postgresql+psycopg2://${POSTGRES_USER}:****@${POSTGRES_HOST}:$
 
 # Ждем подключения к БД
 echo "Waiting for PostgreSQL..."
-sleep 20
+sleep 10
 
 # Проверяем подключение
-if ! timeout 10 psql "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}" -c "SELECT 1;" > /dev/null 2>&1; then
+if ! timeout 120 psql "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}" -c "SELECT 1;" > /dev/null 2>&1; then
     echo "WARNING: Cannot connect to PostgreSQL, but continuing..."
 fi
 
