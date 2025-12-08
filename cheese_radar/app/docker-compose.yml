@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "5080:5080"
     networks:
       - infra_network
 
@@ -24,7 +24,6 @@ services:
       - mongo_data:/data/db
     networks:
       - infra_network
-
 
 volumes:
   mongo_data:

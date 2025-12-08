@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_URL = f"http://{os.getenv("APP_HOST")}:8081"
+API_URL = f"http://{os.getenv("APP_HOST")}:5080"
 
 
 def call_scraper_api(endpoint, payload=None):

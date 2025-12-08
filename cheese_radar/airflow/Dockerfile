@@ -1,26 +1,9 @@
 FROM python:3.11-slim-bookworm
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        postgresql-client \
-        libpq-dev \
-        gcc \
-        python3-dev \
-        && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /opt/airflow/logs/scheduler && \
+    chown -R airflow:0 /opt/airflow/logs && \
+    chmod -R 775 /opt/airflow/logs
 
-RUN pip install --no-cache-dir \
-    "apache-airflow[postgres]==2.7.3" \
-    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.11.txt"
-
-RUN useradd -m -u 1000 airflow && \
-    mkdir -p /opt/airflow/dags && \
-    chown -R airflow:airflow /opt/airflow
-
-WORKDIR /opt/airflow
-
-COPY dags /opt/airflow/dags
-COPY --chmod=755 entrypoint.sh /entrypoint.sh
-
+COPY requirements.txt /
+RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /requirements.txt
 USER airflow
-
-ENTRYPOINT ["/entrypoint.sh"]
