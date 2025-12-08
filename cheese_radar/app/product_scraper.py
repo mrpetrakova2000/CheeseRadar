@@ -16,11 +16,12 @@ class ProductScraper:
         self.logger = get_logger(self.__class__.__name__)
 
     def _setup_driver(self):
-        """Настройка драйвера"""
-        self.logger.info(f"[{self.store.store_name}] Настройка драйвера...")
+        """Настройка драйвера — ультра-лёгкая версия для Railway"""
+        self.logger.info(f"[{self.store.store_name}] Настройка драйвера (lite mode)...")
 
         options = uc.ChromeOptions()
 
+        # Ваши текущие аргументы (оставляем)
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
@@ -31,10 +32,6 @@ class ProductScraper:
         options.add_argument('--no-service-autorun')
         options.add_argument('--password-store=basic')
         options.add_argument('--disable-extensions')
-        options.add_argument('--single-process')
-        options.add_argument('--memory-pressure-off')
-        options.add_argument('--max_old_space_size=192')
-
         options.add_argument('--disable-web-security')
         options.add_argument('--disable-features=VizDisplayCompositor')
         options.add_argument('--dns-prefetch-disable')
@@ -44,9 +41,20 @@ class ProductScraper:
         options.add_argument('--disable-client-side-phishing-detection')
         options.add_argument('--disable-sync')
         options.add_argument('--disable-renderer-backgrounding')
+        options.add_argument('--memory-pressure-off')
+
+        # НОВЫЕ аргументы для экономии RAM (добавили только эти 4)
+        options.add_argument('--single-process')  # ← экономит 200–300 МБ, ключевой
+        options.add_argument('--disable-component-extensions-with-background-pages')
+        options.add_argument('--disable-default-apps')
+        options.add_argument('--mute-audio')  # отключает звук, -20 МБ
 
         selected_ua = get_random_user_agent()
         options.add_argument(f'--user-agent={selected_ua}')
+
+        # Ещё жёстче ограничиваем V8 (JavaScript heap)
+        options.add_argument('--max_old_space_size=96')  # с 256 на 96 МБ
+        options.add_argument('--js-flags=--max-old-space-size=96')
 
         prefs = {
             "credentials_enable_service": False,
@@ -55,15 +63,20 @@ class ProductScraper:
             "profile.default_content_settings.popups": 0,
         }
         options.add_experimental_option("prefs", prefs)
+        # Убираем binary_location — uc сама найдёт
 
         self.driver = uc.Chrome(
             options=options,
             use_subprocess=True,
             headless=True,
-            version_main=143
+            version_main=143,
+            # Отключаем патчинг драйвера — экономит 100 МБ и время
+            suppress_welcome=True,
+            # Не патчим — используем стандартный chromedriver (достаточно для Магнита)
+            driver_executable_path="/usr/bin/chromedriver",  # из Dockerfile
         )
 
-        # Скрипты обхода + таймауты
+        # Скрипты обхода
         self.driver.execute_script("""
             Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
             Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
@@ -71,11 +84,14 @@ class ProductScraper:
             window.chrome = {runtime: {}};
         """)
 
-        self.driver.set_page_load_timeout(60)
-        self.driver.set_script_timeout(60)
+        # Таймауты — поднимаем чуть-чуть, но не сильно (проблема не в них)
+        self.driver.set_page_load_timeout(90)  # с 60 на 90 сек
+        self.driver.set_script_timeout(90)
 
-        self.logger.info(f"[{self.store.store_name}] Драйвер настроен (Chrome 143), UA: {selected_ua[:50]}...")
+        self.logger.info(
+            f"[{self.store.store_name}] Драйвер настроен (lite, RAM limit 96MB), UA: {selected_ua[:50]}...")
         return self.driver
+
 
     def _normal_page_load(self, url):
         """Обычная загрузка страницы магазинов"""

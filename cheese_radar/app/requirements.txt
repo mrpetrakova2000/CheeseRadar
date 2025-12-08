@@ -1,4 +1,4 @@
-undetected-chromedriver==3.5.5
+undetected-chromedriver-lite==3.5.5
 selenium==4.15.2
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
