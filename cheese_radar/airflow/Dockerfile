@@ -1,11 +1,12 @@
-FROM apache/airflow:slim-2.7.3-python3.11
+FROM python:3.11-alpine
 
-COPY requirements.txt /
-RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /requirements.txt
+RUN apk add --no-cache postgresql-dev gcc python3-dev musl-dev libffi-dev
+RUN pip install --no-cache-dir apache-airflow==2.7.3 psycopg2-binary
+RUN apk del gcc python3-dev musl-dev libffi-dev
 
-COPY --chmod=755 entrypoint.sh /entrypoint.sh
+RUN adduser -D -u 1000 airflow && mkdir -p /opt/airflow/dags
+USER airflow
+WORKDIR /opt/airflow
 COPY dags /opt/airflow/dags
 
-USER airflow
-
-ENTRYPOINT ["/entrypoint.sh"]
+CMD sleep 150 && airflow db init && airflow users create --username admin --password admin123 --firstname Admin --lastname User --role Admin --email admin@example.com && airflow scheduler & airflow webserver --port 8080
