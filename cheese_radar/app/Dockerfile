@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
     gnupg \
-    unzip \                     # ← добавили
+    unzip \
     libnss3 \
     libatk-bridge2.0-0 \
     libxkbcommon0 \
