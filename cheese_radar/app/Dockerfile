@@ -1,17 +1,30 @@
 FROM python:3.11-slim-bookworm
 
-# Запускаем всё от непривилегированного пользователя (важно!)
+# Создаём непривилегированного пользователя
 RUN useradd -m -u 1001 appuser
 USER appuser
 
 WORKDIR /app
 
-# Системные зависимости
+# Устанавливаем минимальный набор зависимостей
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates wget gnupg unzip \
-    libnss3 libatk-bridge2.0-0 libatk1.0-0 libc6 libx11-6 \
-    libxcomposite1 libxdamage1 libxrandr2 libgbm1 libxshmfence1 \
-    libasound2 libatspi2.0-0 libgtk-3-0 \
+    ca-certificates \
+    wget \
+    gnupg \
+    unzip \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libxkbcommon0 \
+    libx11-6 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libxshmfence1 \
+    libasound2 \
+    libatspi2.0-0 \
+    libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Chrome 143
@@ -30,18 +43,16 @@ RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/143.0.7499.
     && chmod +x /usr/local/bin/chromedriver \
     && rm -rf chromedriver-linux64.zip chromedriver-linux64
 
-# Python-зависимости (как непривилегированный пользователь)
+# Python-зависимости
 COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Код приложения
 COPY --chown=appuser:appuser . /app
 
-# Явно говорим undetected-chromedriver куда писать свои файлы
+# Настройки для undetected-chromedriver
 ENV UC_DRIVER_CACHE_DIR=/app/.uc_cache
 ENV XDG_CACHE_HOME=/app/.cache
-
-# Обязательно для Railway
 ENV PYTHONUNBUFFERED=1
 
 CMD ["python3", "main.py"]
