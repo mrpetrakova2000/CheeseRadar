@@ -1,8 +1,12 @@
 import requests
 import logging
 from time import sleep
+import os
+from dotenv import load_dotenv
 
-API_URL = "http://host.docker.internal:8081"
+load_dotenv()
+
+API_URL = f"http://{os.getenv("APP_HOST")}:8081"
 
 
 def call_scraper_api(endpoint, payload=None):
