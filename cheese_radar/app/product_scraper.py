@@ -21,7 +21,6 @@ class ProductScraper:
 
         options = uc.ChromeOptions()
 
-        # Основные опции
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
@@ -32,6 +31,18 @@ class ProductScraper:
         options.add_argument('--no-service-autorun')
         options.add_argument('--password-store=basic')
         options.add_argument('--disable-extensions')
+
+        options.add_argument('--disable-web-security')
+        options.add_argument('--disable-features=VizDisplayCompositor')
+        options.add_argument('--dns-prefetch-disable')
+        options.add_argument('--disable-background-networking')
+        options.add_argument('--disable-background-timer-throttling')
+        options.add_argument('--disable-hang-monitor')
+        options.add_argument('--disable-client-side-phishing-detection')
+        options.add_argument('--disable-sync')
+        options.add_argument('--disable-renderer-backgrounding')
+        options.add_argument('--memory-pressure-off')
+        options.add_argument('--max_old_space_size=256')
 
         selected_ua = get_random_user_agent()
         options.add_argument(f'--user-agent={selected_ua}')
@@ -45,22 +56,26 @@ class ProductScraper:
         options.add_experimental_option("prefs", prefs)
         options.binary_location = "/usr/bin/google-chrome"
 
-        driver = uc.Chrome(
+        self.driver = uc.Chrome(
             options=options,
             use_subprocess=True,
             headless=True,
+            version_main=143
         )
 
-        # Устанавливаем скрипты для обхода детекции
-        driver.execute_script("""
+        # Скрипты обхода + таймауты
+        self.driver.execute_script("""
             Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
             Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
             Object.defineProperty(navigator, 'languages', {get: () => ['ru-RU', 'ru', 'en-US', 'en']});
             window.chrome = {runtime: {}};
         """)
 
-        self.logger.info(f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}...")
-        return driver
+        self.driver.set_page_load_timeout(60)
+        self.driver.set_script_timeout(60)
+
+        self.logger.info(f"[{self.store.store_name}] Драйвер настроен (Chrome 143), UA: {selected_ua[:50]}...")
+        return self.driver
 
     def _normal_page_load(self, url):
         """Обычная загрузка страницы магазинов"""

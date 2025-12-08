@@ -1,12 +1,26 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim-bookworm
 
-RUN apk add --no-cache postgresql-dev gcc python3-dev musl-dev libffi-dev
-RUN pip install --no-cache-dir apache-airflow==2.7.3 psycopg2-binary
-RUN apk del gcc python3-dev musl-dev libffi-dev
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        postgresql-client \
+        libpq-dev \
+        gcc \
+        python3-dev \
+        && rm -rf /var/lib/apt/lists/*
 
-RUN adduser -D -u 1000 airflow && mkdir -p /opt/airflow/dags
-USER airflow
+RUN pip install --no-cache-dir \
+    "apache-airflow[postgres]==2.7.3" \
+    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.11.txt"
+
+RUN useradd -m -u 1000 airflow && \
+    mkdir -p /opt/airflow/dags && \
+    chown -R airflow:airflow /opt/airflow
+
 WORKDIR /opt/airflow
-COPY dags /opt/airflow/dags
 
-CMD sleep 150 && airflow db init && airflow users create --username admin --password admin123 --firstname Admin --lastname User --role Admin --email admin@example.com && airflow scheduler & airflow webserver --port 8080
+COPY dags /opt/airflow/dags
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+
+USER airflow
+
+ENTRYPOINT ["/entrypoint.sh"]
