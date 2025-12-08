@@ -5,4 +5,7 @@ RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /requirem
 
 USER airflow
 
-CMD ["bash", "-c", "sleep 10 && airflow db init 2>/dev/null || true && airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin123 2>/dev/null || true && airflow scheduler & exec airflow webserver --port 8080"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
