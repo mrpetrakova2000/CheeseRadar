@@ -16,11 +16,11 @@ RUN useradd -m -u 1000 airflow && \
     mkdir -p /opt/airflow/dags && \
     chown -R airflow:airflow /opt/airflow
 
-USER airflow
 WORKDIR /opt/airflow
 
 COPY dags /opt/airflow/dags
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+
+USER airflow
 
 ENTRYPOINT ["/entrypoint.sh"]
