@@ -25,35 +25,7 @@ x-airflow-common: &airflow-common
         memory: 500M
 
 services:
-  postgres:
-    image: postgres:13-alpine
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-      POSTGRES_SHARED_BUFFERS: 32MB
-      POSTGRES_MAX_CONNECTIONS: 5
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U airflow" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-
   airflow:
     <<: *airflow-common
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
-
-volumes:
-  postgres-db-volume:
