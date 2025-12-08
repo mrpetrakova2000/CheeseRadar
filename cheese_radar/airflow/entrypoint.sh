@@ -22,7 +22,7 @@ fi
 
 sleep 150
 echo "Initializing Airflow database..."
-airflow db init
+airflow db migrate
 
 echo "Creating admin user..."
 airflow users create \
