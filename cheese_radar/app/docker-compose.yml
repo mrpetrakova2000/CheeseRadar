@@ -25,13 +25,6 @@ services:
     networks:
       - infra_network
 
-  gitlab-runner:
-    image: gitlab/gitlab-runner:alpine
-    container_name: gitlab-runner
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
 
 volumes:
   mongo_data:
