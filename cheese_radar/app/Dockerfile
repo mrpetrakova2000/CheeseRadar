@@ -2,7 +2,7 @@ FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
-# Системные пакеты (от root)
+# Всё делаем от root — на Railway это нормально и работает
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget unzip libnss3 libgbm1 libasound2 libatspi2.0-0 libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
@@ -22,27 +22,18 @@ RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/143.0.7499.
     && chmod +x /usr/bin/chromedriver \
     && rm -rf chromedriver-linux64*
 
-# Создаём пользователя и папки
-RUN useradd -m -u 1001 appuser \
-    && mkdir -p /app/.cache /app/.uc_cache \
-    && chown -R appuser:appuser /app
-
-# Переключаемся на appuser
-USER appuser
-
-# КРИТИЧНО: копируем requirements.txt с правами appuser
-COPY --chown=appuser:appuser requirements.txt .
-
-# Устанавливаем зависимости ГЛОБАЛЬНО (без --user) — appuser может это делать в slim-образе
+# Устанавливаем Python-пакеты глобально (никакого --user!)
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Код
-COPY --chown=appuser:appuser . /app
+# Копируем код
+COPY . /app
 
-# Окружение (HOME решает проблему с uc)
-ENV PYTHONUNBUFFERED=1
+# Эти три переменные — всё, что нужно для undetected-chromedriver
+ENV HOME=/app
 ENV XDG_CACHE_HOME=/app/.cache
 ENV UC_DRIVER_CACHE_DIR=/app/.uc_cache
-ENV HOME=/app
+
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python3", "main.py"]
