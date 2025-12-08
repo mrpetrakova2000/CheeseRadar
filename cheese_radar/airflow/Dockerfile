@@ -1,4 +1,4 @@
-FROM apache/airflow:2.3.4-python3.9-slim
+FROM apache/airflow:slim-3.1.4rc1-python3.11
 
 COPY requirements.txt /
 RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /requirements.txt
