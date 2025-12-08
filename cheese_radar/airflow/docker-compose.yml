@@ -1,31 +1,28 @@
 version: '3.8'
 
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.10.5
+  build: .
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__EXECUTOR: SequentialExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: 'false'
-    AIRFLOW__CORE__PARALLELISM: '2'
-    AIRFLOW__CORE__DAG_CONCURRENCY: '1'
-    AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: '1'
-    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: '30'
-    AIRFLOW__SCHEDULER__PARSING_PROCESSES: '1'
+    AIRFLOW__CORE__PARALLELISM: '1'
     AIRFLOW__WEBSERVER__WORKERS: '1'
-    PYTHONGC: '2'
+    PYTHONGC: '3'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
-    - ./plugins:/opt/airflow/plugins
     - ./requirements.txt:/docker-context-files/requirements.txt
-  user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    - postgres
-    - redis
+
+  user: "50000:0"
+  deploy:
+    resources:
+      limits:
+        memory: 500M
 
 services:
   postgres:
@@ -34,16 +31,12 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
-
-      POSTGRES_SHARED_BUFFERS: 64MB
-      POSTGRES_EFFECTIVE_CACHE_SIZE: 128MB
-      POSTGRES_MAINTENANCE_WORK_MEM: 32MB
-      POSTGRES_WORK_MEM: 2MB
-      POSTGRES_MAX_CONNECTIONS: 15
+      POSTGRES_SHARED_BUFFERS: 32MB
+      POSTGRES_MAX_CONNECTIONS: 5
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 200M
     ports:
       - "5432:5432"
     volumes:
@@ -55,40 +48,12 @@ services:
       retries: 10
     restart: unless-stopped
 
-  airflow-webserver:
+  airflow:
     <<: *airflow-common
-    command: webserver
     ports:
       - "8080:8080"
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-
-  airflow-scheduler:
-    <<: *airflow-common
-    command: scheduler
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    restart: unless-stopped
-
-  airflow-init:
-    <<: *airflow-common
-    command: version
-    environment:
-      <<: *airflow-common-env
-      _AIRFLOW_DB_UPGRADE: 'true'
-      _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: "${AIRFLOW_WWW_USER_USERNAME}"
-      _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_WWW_USER_PASSWORD}"
+    depends_on:
+      - postgres
 
 volumes:
   postgres-db-volume:
