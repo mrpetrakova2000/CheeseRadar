@@ -1,33 +1,24 @@
 FROM python:3.11-slim-bookworm
 
-# Создаём непривилегированного пользователя
+# Создаём непривилегированного пользователя для безопасности и прав доступа
 RUN useradd -m -u 1001 appuser
 USER appuser
 
 WORKDIR /app
 
-# Устанавливаем минимальный набор зависимостей
+# Минимальные зависимости (убрали дубликаты, которые вызывали exit code 100)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
     wget \
     gnupg \
     unzip \
     libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libxkbcommon0 \
-    libx11-6 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
     libgbm1 \
-    libxshmfence1 \
     libasound2 \
     libatspi2.0-0 \
     libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Chrome 143
+# Chrome 143 (устанавливаем в /app/chrome, чтобы избежать прав root)
 RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/143.0.7499.40/linux64/chrome-linux64.zip \
     && unzip chrome-linux64.zip \
     && mkdir -p /app/chrome \
@@ -43,16 +34,19 @@ RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/143.0.7499.
     && chmod +x /usr/local/bin/chromedriver \
     && rm -rf chromedriver-linux64.zip chromedriver-linux64
 
-# Python-зависимости
+# Python-зависимости (как appuser)
 COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Код приложения
 COPY --chown=appuser:appuser . /app
 
-# Настройки для undetected-chromedriver
+# Папки для undetected-chromedriver (чтобы не было Permission denied /app/.local)
 ENV UC_DRIVER_CACHE_DIR=/app/.uc_cache
 ENV XDG_CACHE_HOME=/app/.cache
+RUN mkdir -p /app/.uc_cache /app/.cache && chown -R appuser:appuser /app/.uc*
+
+# Для Railway
 ENV PYTHONUNBUFFERED=1
 
 CMD ["python3", "main.py"]
