@@ -31,6 +31,9 @@ class ProductScraper:
         options.add_argument('--no-service-autorun')
         options.add_argument('--password-store=basic')
         options.add_argument('--disable-extensions')
+        options.add_argument('--single-process')
+        options.add_argument('--memory-pressure-off')
+        options.add_argument('--max_old_space_size=192')
 
         options.add_argument('--disable-web-security')
         options.add_argument('--disable-features=VizDisplayCompositor')
@@ -41,8 +44,6 @@ class ProductScraper:
         options.add_argument('--disable-client-side-phishing-detection')
         options.add_argument('--disable-sync')
         options.add_argument('--disable-renderer-backgrounding')
-        options.add_argument('--memory-pressure-off')
-        options.add_argument('--max_old_space_size=256')
 
         selected_ua = get_random_user_agent()
         options.add_argument(f'--user-agent={selected_ua}')
@@ -54,7 +55,6 @@ class ProductScraper:
             "profile.default_content_settings.popups": 0,
         }
         options.add_experimental_option("prefs", prefs)
-        options.binary_location = "/usr/bin/google-chrome"
 
         self.driver = uc.Chrome(
             options=options,
