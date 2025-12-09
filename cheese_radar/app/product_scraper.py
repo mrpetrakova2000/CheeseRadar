@@ -21,6 +21,7 @@ class ProductScraper:
 
         options = uc.ChromeOptions()
 
+        # Основные опции
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
@@ -31,19 +32,6 @@ class ProductScraper:
         options.add_argument('--no-service-autorun')
         options.add_argument('--password-store=basic')
         options.add_argument('--disable-extensions')
-        options.add_argument('--single-process')
-        options.add_argument('--memory-pressure-off')
-        options.add_argument('--max_old_space_size=192')
-
-        options.add_argument('--disable-web-security')
-        options.add_argument('--disable-features=VizDisplayCompositor')
-        options.add_argument('--dns-prefetch-disable')
-        options.add_argument('--disable-background-networking')
-        options.add_argument('--disable-background-timer-throttling')
-        options.add_argument('--disable-hang-monitor')
-        options.add_argument('--disable-client-side-phishing-detection')
-        options.add_argument('--disable-sync')
-        options.add_argument('--disable-renderer-backgrounding')
 
         selected_ua = get_random_user_agent()
         options.add_argument(f'--user-agent={selected_ua}')
@@ -56,15 +44,14 @@ class ProductScraper:
         }
         options.add_experimental_option("prefs", prefs)
 
-        self.driver = uc.Chrome(
+        driver = uc.Chrome(
             options=options,
             use_subprocess=True,
             headless=True,
-            version_main=143
         )
 
-        # Скрипты обхода + таймауты
-        self.driver.execute_script("""
+        # Устанавливаем скрипты для обхода детекции
+        driver.execute_script("""
             Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
             Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
             Object.defineProperty(navigator, 'languages', {get: () => ['ru-RU', 'ru', 'en-US', 'en']});
@@ -84,33 +71,33 @@ class ProductScraper:
         time.sleep(PAGE_LOAD_PAUSE_TIME)
         simulate_human_interaction(self.driver)
 
-    def _scroll_to_load_all_products(self):
-        """Скроллинг для загрузки всех товаров"""
-        self.logger.info(f"[{self.store.store_name}] Скроллинг для загрузки всех товаров...")
-
-        last_height = self.driver.execute_script("return document.body.scrollHeight")
-        scroll_attempts = 0
-        max_scroll_attempts = 8
-
-        while scroll_attempts < max_scroll_attempts:
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-            self.driver.execute_script("window.scrollBy(0, -100);")
-            time.sleep(random.uniform(0.5, 1))
-
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
-
-            if new_height == last_height:
-                scroll_attempts += 1
-                self.logger.debug(
-                    f"[{self.store.store_name}] Высота не изменилась, попытка {scroll_attempts}/{max_scroll_attempts}")
-            else:
-                scroll_attempts = 0
-                last_height = new_height
-
-            time.sleep(random.uniform(0.5, 1))
-
-        self.logger.info(f"[{self.store.store_name}] Скроллинг завершен")
+    # def _scroll_to_load_all_products(self):
+    #     """Скроллинг для загрузки всех товаров"""
+    #     self.logger.info(f"[{self.store.store_name}] Скроллинг для загрузки всех товаров...")
+    #
+    #     last_height = self.driver.execute_script("return document.body.scrollHeight")
+    #     scroll_attempts = 0
+    #     max_scroll_attempts = 8
+    #
+    #     while scroll_attempts < max_scroll_attempts:
+    #         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    #
+    #         self.driver.execute_script("window.scrollBy(0, -100);")
+    #         time.sleep(random.uniform(0.5, 1))
+    #
+    #         new_height = self.driver.execute_script("return document.body.scrollHeight")
+    #
+    #         if new_height == last_height:
+    #             scroll_attempts += 1
+    #             self.logger.debug(
+    #                 f"[{self.store.store_name}] Высота не изменилась, попытка {scroll_attempts}/{max_scroll_attempts}")
+    #         else:
+    #             scroll_attempts = 0
+    #             last_height = new_height
+    #
+    #         time.sleep(random.uniform(0.5, 1))
+    #
+    #     self.logger.info(f"[{self.store.store_name}] Скроллинг завершен")
 
     def _load_existing_products_from_mongo(self):
         """Загружает существующие товары из MongoDB"""
@@ -285,7 +272,7 @@ class ProductScraper:
                 self.logger.info(f"[{self.store.store_name}] Запрос страницы {page}: {url}")
 
                 try:
-                    self._scroll_to_load_all_products()
+                    # self._scroll_to_load_all_products()
                     parsed_products = self._parse_single_page()
 
                     if not parsed_products:
