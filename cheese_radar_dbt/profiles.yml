@@ -1,0 +1,28 @@
+config:
+  send_anonymous_usage_stats: false
+
+cheese_radar_dbt:
+  target: default
+  outputs:
+    default:
+      type: postgres
+      host: postgres
+      user: airflow
+      password: airflow
+      port: 5432
+      dbname: cheeseradar
+      schema: dbt
+      threads: 1
+      connect_timeout: 10
+
+    elementary:
+      type: postgres
+      host: postgres
+      user: airflow
+      password: airflow
+      port: 5432
+      dbname: cheeseradar
+      schema: elementary
+      threads: 1
+      connect_timeout: 10
+      query_tag: elementary

@@ -21,7 +21,8 @@ SELECTORS = {
         "name": '.unit-catalog-product-preview-title',
         "price": '.unit-catalog-product-preview-prices__regular',
         "discount": '.unit-catalog-product-preview__discount',
-        "rating": '.unit-catalog-product-preview-rating-score'
+        "rating": '.unit-catalog-product-preview-rating-score',
+        "weight": '.unit-catalog-product-preview-unit-value'
     },
     "perekrestok": {
         "product": ".product-card",
@@ -46,7 +47,7 @@ PAGINATION_PARAMS = {
     "lenta": "/page/"
 }
 
-PAGE_LOAD_PAUSE_TIME = 5
+PAGE_LOAD_PAUSE_TIME = 10
 BEFORE_SCRAPE_PAUSE_TIME = 3
 COOKIE_PAUSE_TIME = 0.5
 SHORT_PAUSE_TIME = 2

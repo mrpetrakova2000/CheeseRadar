@@ -1,0 +1,278 @@
+version: 2
+
+models:
+  - name: dm_cheese_actual_prices
+    description: "Актуальный срез данных о сырах с последней загрузки"
+    columns:
+      - name: name
+        description: "Название продукта"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: store
+        description: "Магазин"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: date_added
+        description: "Дата добавления записи"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: price
+        description: "Цена товара"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: price_per_kg
+        description: "Цена за килограмм"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 10000
+              tags: ['warn']
+
+      - name: discount
+        description: "Процент скидки"
+        tests:
+          - accepted_range:
+              min_value: 0
+              max_value: 100
+              tags: ['warn']
+
+      - name: weight
+        description: "Вес товара"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 5000
+              tags: ['warn']
+
+      - name: unit
+        description: "Единица измерения веса"
+        tests:
+          - accepted_values:
+              values: ['г', 'кг', 'мл', 'л']
+              tags: ['warn']
+
+      - name: fat_content
+        description: "Жирность в процентах"
+        tests:
+          - accepted_range:
+              min_value: 0
+              max_value: 100
+              tags: ['warn']
+
+      - name: is_sliced
+        description: "Является ли сыр нарезкой"
+        tests:
+          - accepted_values:
+              values: [true, false]
+              tags: ['warn']
+
+      - name: is_bzmj
+        description: "Является ли сыр без заменителей молочного жира"
+        tests:
+          - accepted_values:
+              values: [true, false]
+              tags: ['warn']
+
+      - name: is_creamy
+        description: "Является ли сыр плавленым"
+        tests:
+          - accepted_values:
+              values: [true, false]
+              tags: ['warn']
+
+      - name: rating
+        description: "Рейтинг товара"
+        tests:
+          - accepted_range:
+              min_value: 0
+              max_value: 10
+              tags: ['warn']
+
+  - name: dm_cheese_metrics_aggregated
+    description: "Агрегированные метрики по магазинам"
+    columns:
+      - name: store
+        description: "Магазин"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_values:
+              values: ['Магнит']
+              tags: ['warn']
+
+      - name: total_products
+        description: "Общее количество товаров"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              tags: ['warn']
+
+      - name: avg_price_per_kg
+        description: "Средняя цена за килограмм"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 10000
+              tags: ['warn']
+
+      - name: discounted_products
+        description: "Количество товаров со скидкой"
+        tests:
+          - accepted_range:
+              min_value: 0
+              tags: ['warn']
+
+      - name: discount_coverage_pct
+        description: "Процент товаров со скидкой"
+        tests:
+          - accepted_range:
+              min_value: 0
+              max_value: 100
+              tags: ['warn']
+
+      - name: sliced_pct
+        description: "Процент нарезанных сыров"
+        tests:
+          - accepted_range:
+              min_value: 0
+              max_value: 100
+              tags: ['warn']
+
+  - name: dm_cheese_hist_analytics
+    description: "Аналитика цен на историчных данных"
+    columns:
+      - name: name
+        description: "Название продукта"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: store
+        description: "Магазин"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: price_per_kg_now
+        description: "Текущая цена за кг"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 10000
+              tags: ['warn']
+
+      - name: discount_now
+        description: "Текущая скидка"
+        tests:
+          - accepted_range:
+              min_value: 0
+              max_value: 100
+              tags: ['warn']
+
+      - name: price_month_avg
+        description: "Средняя цена за 30 дней"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 10000
+              tags: ['warn']
+
+      - name: price_month_min
+        description: "Минимальная цена за 30 дней"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 10000
+              tags: ['warn']
+
+      - name: price_month_max
+        description: "Максимальная цена за 30 дней"
+        tests:
+          - not_null:
+              tags: ['error']
+          - accepted_range:
+              min_value: 0
+              max_value: 10000
+              tags: ['warn']
+
+      - name: diff_vs_avg
+        description: "Размер изменения цены от средней"
+
+      - name: diff_vs_avg_pct
+        description: "Процент изменения цены от средней"
+        tests:
+          - accepted_range:
+              min_value: -100
+              max_value: 1000
+              tags: ['warn']
+
+      - name: price_comment
+        description: "Рекомендация по покупке"
+        tests:
+          - accepted_values:
+              values: ['хорошая скидка', 'низкая цена', 'стандарт']
+              tags: ['warn']
+
+  - name: dm_cheese_top_products
+    description: "Топ продуктов по разным критериям"
+    columns:
+      - name: name
+        description: "Название продукта"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: store
+        description: "Магазин"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: price_per_kg
+        description: "Цена за килограмм"
+        tests:
+          - not_null:
+              tags: ['error']
+
+      - name: rank_cheapest
+        description: "Ранг по дешевизне"
+        tests:
+          - accepted_range:
+              min_value: 1
+              tags: ['warn']
+
+      - name: rank_best_discount
+        description: "Ранг по скидкам"
+        tests:
+          - accepted_range:
+              min_value: 1
+              tags: ['warn']
+
+      - name: in_any_top_10
+        description: "Входит в любой топ-10"
+        tests:
+          - accepted_values:
+              values: [true, false]
+              tags: ['warn']

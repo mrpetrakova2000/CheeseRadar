@@ -58,11 +58,8 @@ class ProductScraper:
             window.chrome = {runtime: {}};
         """)
 
-        self.driver.set_page_load_timeout(60)
-        self.driver.set_script_timeout(60)
-
-        self.logger.info(f"[{self.store.store_name}] Драйвер настроен (Chrome 143), UA: {selected_ua[:50]}...")
-        return self.driver
+        self.logger.info(f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}...")
+        return driver
 
     def _normal_page_load(self, url):
         """Обычная загрузка страницы магазинов"""
@@ -71,33 +68,33 @@ class ProductScraper:
         time.sleep(PAGE_LOAD_PAUSE_TIME)
         simulate_human_interaction(self.driver)
 
-    # def _scroll_to_load_all_products(self):
-    #     """Скроллинг для загрузки всех товаров"""
-    #     self.logger.info(f"[{self.store.store_name}] Скроллинг для загрузки всех товаров...")
-    #
-    #     last_height = self.driver.execute_script("return document.body.scrollHeight")
-    #     scroll_attempts = 0
-    #     max_scroll_attempts = 8
-    #
-    #     while scroll_attempts < max_scroll_attempts:
-    #         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    #
-    #         self.driver.execute_script("window.scrollBy(0, -100);")
-    #         time.sleep(random.uniform(0.5, 1))
-    #
-    #         new_height = self.driver.execute_script("return document.body.scrollHeight")
-    #
-    #         if new_height == last_height:
-    #             scroll_attempts += 1
-    #             self.logger.debug(
-    #                 f"[{self.store.store_name}] Высота не изменилась, попытка {scroll_attempts}/{max_scroll_attempts}")
-    #         else:
-    #             scroll_attempts = 0
-    #             last_height = new_height
-    #
-    #         time.sleep(random.uniform(0.5, 1))
-    #
-    #     self.logger.info(f"[{self.store.store_name}] Скроллинг завершен")
+    def _scroll_to_load_all_products(self):
+        """Скроллинг для загрузки всех товаров"""
+        self.logger.info(f"[{self.store.store_name}] Скроллинг для загрузки всех товаров...")
+
+        last_height = self.driver.execute_script("return document.body.scrollHeight")
+        scroll_attempts = 0
+        max_scroll_attempts = 8
+
+        while scroll_attempts < max_scroll_attempts:
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+            self.driver.execute_script("window.scrollBy(0, -100);")
+            time.sleep(random.uniform(0.5, 1))
+
+            new_height = self.driver.execute_script("return document.body.scrollHeight")
+
+            if new_height == last_height:
+                scroll_attempts += 1
+                self.logger.debug(
+                    f"[{self.store.store_name}] Высота не изменилась, попытка {scroll_attempts}/{max_scroll_attempts}")
+            else:
+                scroll_attempts = 0
+                last_height = new_height
+
+            time.sleep(random.uniform(0.5, 1))
+
+        self.logger.info(f"[{self.store.store_name}] Скроллинг завершен")
 
     def _load_existing_products_from_mongo(self):
         """Загружает существующие товары из MongoDB"""
@@ -181,12 +178,16 @@ class ProductScraper:
                 rating_elem = item.select_one(self.store.rating_selector)
                 rating = rating_elem.text.strip() if rating_elem else None
 
+                # Вес (если есть)
+                weight_elem = item.select_one(self.store.weight_selector)
+                weight = weight_elem.text.strip() if weight_elem else ''
+
                 # Проверяем обязательные поля
                 if name is None or price is None:
                     continue
 
                 parsed_products.append({
-                    "name": name,
+                    "name": name + " " + weight,
                     "price": price,
                     "discount": discount,
                     "rating": rating,
@@ -247,8 +248,6 @@ class ProductScraper:
                                 all_products.append(product)
                                 scraped_products.append(product)
                                 new_products_total += 1
-                                self.logger.debug(
-                                    f"[{self.store.store_name}] Новый товар: {product['name'][:50]}... - {product['price']} руб.")
 
                             self.logger.info(
                                 f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}")
@@ -272,7 +271,7 @@ class ProductScraper:
                 self.logger.info(f"[{self.store.store_name}] Запрос страницы {page}: {url}")
 
                 try:
-                    # self._scroll_to_load_all_products()
+                    self._scroll_to_load_all_products()
                     parsed_products = self._parse_single_page()
 
                     if not parsed_products:

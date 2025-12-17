@@ -1,0 +1,32 @@
+name: 'cheese_radar_dbt'
+version: '1.0.0'
+
+profile: 'cheese_radar_dbt'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+
+models:
+  cheese_radar_dbt:
+    example:
+      +materialized: view
+    stg:
+      +materialized: incremental
+      +schema: stg
+    ods:
+      +materialized: incremental
+      +schema: ods
+    dm:
+      +materialized: incremental
+      +schema: dm
+  elementary:
+    +schema: elementary
