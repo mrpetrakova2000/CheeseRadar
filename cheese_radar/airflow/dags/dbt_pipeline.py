@@ -41,8 +41,8 @@ with DAG(
         bash_command=f"""
         cd {DBT_PROJECT_DIR} && \
         dbt run --select elementary \
-        --profiles-dir . \
-        --target elementary
+          --profile elementary \
+          --profiles-dir .
         """,
     )
 
@@ -95,8 +95,8 @@ with DAG(
         task_id="dbt_edr_report",
         bash_command=f"""
         cd {DBT_PROJECT_DIR} && \
-        edr report --profile cheese_radar_dbt && \
-        --profiles-dir .
+        edr report \
+         --profiles-dir .  
         """,
     )
 
