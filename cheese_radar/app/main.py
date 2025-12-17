@@ -31,8 +31,8 @@ async def scrape_store(request: ScraperRequest) -> ScrapeResponse:
 
     store_map: Dict[str, tuple] = {
         "magnit": ("Магнит", MagnitScraper),
-        "perekrestok": ("Перекрёсток", PerekrestokScraper),
-        "lenta": ("Лента", LentaScraper),
+        # "perekrestok": ("Перекрёсток", PerekrestokScraper),
+        # "lenta": ("Лента", LentaScraper),
     }
 
     if request.store not in store_map:

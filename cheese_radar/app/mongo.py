@@ -56,14 +56,13 @@ class MongoDBHandler:
         try:
             total_processed = len(products)
             batch_to_insert = []
-            now = datetime.now()
 
             for product in products:
                 try:
                     doc = {
                         **product,
                         "store": store_name,
-                        "scraped_at": now
+                        "scraped_at": product['date_time']
                     }
 
                     batch_to_insert.append(doc)

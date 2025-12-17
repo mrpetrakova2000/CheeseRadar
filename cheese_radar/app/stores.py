@@ -17,6 +17,7 @@ class StoreScraper(ABC):
         self.page_param = ""
         self.discount_selector = ""
         self.rating_selector = ""
+        self.weight_selector = ""
         self.price_cents_selector = None
         self.SESSION_COOKIE = None
         self.logger = get_logger(self.__class__.__name__)
@@ -42,6 +43,7 @@ class MagnitScraper(StoreScraper):
         self.price_selector = SELECTORS["magnit"]["price"]
         self.discount_selector = SELECTORS["magnit"]["discount"]
         self.rating_selector = SELECTORS["magnit"]["rating"]
+        self.weight_selector = SELECTORS["magnit"]["weight"]
         self.page_param = PAGINATION_PARAMS["magnit"]
 
     def before_scrape(self, driver):
