@@ -26,7 +26,6 @@ store_metrics AS (
         COUNT(CASE WHEN discount > 0 THEN 1 END) as discounted_products,
         ROUND(AVG(CASE WHEN discount > 0 THEN discount END), 2) as avg_discount,
         ROUND(MAX(discount), 2) as max_discount,
-        -- Вычисляем процент товаров со скидкой сразу здесь
         ROUND(
             COUNT(CASE WHEN discount > 0 THEN 1 END)::DECIMAL
             / NULLIF(COUNT(*), 0)
