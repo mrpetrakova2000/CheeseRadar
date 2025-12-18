@@ -14,13 +14,20 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__PARALLELISM: 32
     AIRFLOW__CORE__DAG_CONCURRENCY: 16
     AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 16
+    DBT_PROJECT_DIR: /opt/airflow/dbt  
+    DBT_PROFILES_DIR: /opt/airflow/dbt
+    POSTGRES_HOST: postgres 
+    POSTGRES_USER: airflow
+    POSTGRES_PASSWORD: airflow
+    POSTGRES_DB: cheeseradar
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ../../cheese_radar_dbt:/opt/airflow/dbt
     - ./plugins:/opt/airflow/plugins
     - ./requirements.txt:/docker-context-files/requirements.txt
-  user: "${AIRFLOW_UID:-50000}:0"
+    - ../../cheese_radar_dbt/edr_target:/opt/airflow/elementary_reports 
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}"
   depends_on:
     postgres:
       condition: service_healthy
@@ -38,9 +45,11 @@ services:
       - postgres-db-volume:/var/lib/postgresql/data
       - ./init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow", "-d", "cheeseradar" ]
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      timeout: 10s
       interval: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
     restart: always
 
   airflow-webserver:
@@ -74,6 +83,15 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: "${AIRFLOW_WWW_USER_USERNAME}"
       _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_WWW_USER_PASSWORD}"
+
+  elementary-reports:
+    image: python:3.11-alpine
+    ports: 
+    - "65080:8081"
+    volumes: 
+      -  ../../cheese_radar_dbt/edr_target/elementary_report.html:/app/elementary_report.html
+    working_dir: /app
+    command: python -m http.server 8081 --bind 0.0.0.0 
 
 volumes:
   postgres-db-volume:

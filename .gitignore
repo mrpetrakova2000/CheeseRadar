@@ -4,3 +4,8 @@
 /cheese_radar/airflow/plugins/
 /cheese_radar/app/.pytest_cache/
 /.vscode/
+/cheese_radar_dbt/dbt_packages/
+/cheese_radar_dbt/edr_target/*.log
+/cheese_radar_dbt/target/
+/cheese_radar_dbt/logs/
+/cheese_radar_dbt/package-lock.yml
