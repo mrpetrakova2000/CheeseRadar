@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from mongo_to_postgres import move_magnit_products, move_perekrestok_products

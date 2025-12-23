@@ -1,16 +1,16 @@
-import os
 import logging
+import os
 from datetime import datetime
-from typing import Dict, Any
 from textwrap import shorten
-from tabulate import tabulate
+from typing import Any, Dict
 
-from dotenv import load_dotenv
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.param import Param
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import reflection
+from tabulate import tabulate
 
 load_dotenv()
 

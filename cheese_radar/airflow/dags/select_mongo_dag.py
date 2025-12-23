@@ -1,14 +1,14 @@
-import os
 import json
 import logging
+import os
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 
-from dotenv import load_dotenv
-from pymongo import MongoClient
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.param import Param
+from dotenv import load_dotenv
+from pymongo import MongoClient
 
 load_dotenv()
 

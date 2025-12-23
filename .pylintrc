@@ -1,22 +1,44 @@
 [MASTER]
-jobs=4
+jobs=0
+ignore-patterns=test_*.py,__pycache__
 
 [MESSAGES CONTROL]
 disable=
+    invalid-name,
+    logging-fstring-interpolation,
+    unused-import,
+    import-error,
     missing-docstring,
     too-few-public-methods,
-    import-error,
-    line-too-long
+    wildcard-import,
+    unused-wildcard-import,
+    broad-exception-caught,
+    too-many-nested-blocks,
+    too-many-branches,
+    too-many-statements,
+    line-too-long,
+    unused-variable,
+    bare-except
+
+[TYPECHECK]
+ignored-modules=enum,typing,collections,abc
+ignored-classes=optparse.Values,thread._local,_thread._local
 
 [FORMAT]
-max-line-length=200
+max-line-length=120
 
 [BASIC]
-good-names=i,j,k,ex,_,df,db
+good-names=i,j,k,ex,_,df,db,id,app,ti,conn,cur,context,err,e
+ignored-modules=enum,typing,collections,abc
 
 [DESIGN]
 max-args=8
 max-locals=25
+max-parents=12
+max-statements=80
+max-branches=25
+max-returns=6
 
 [REPORTS]
 output-format=colorized
+score=yes

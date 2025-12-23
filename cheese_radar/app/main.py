@@ -1,11 +1,11 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import uvicorn
 import logging
 from typing import Dict
 
-from stores import MagnitScraper, PerekrestokScraper, LentaScraper
+import uvicorn
+from fastapi import FastAPI, HTTPException
 from product_scraper import ProductScraper
+from pydantic import BaseModel
+from stores import LentaScraper, MagnitScraper, PerekrestokScraper
 from utils import setup_logging
 
 setup_logging()

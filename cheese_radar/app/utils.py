@@ -1,11 +1,12 @@
 import logging
-import time
-import random
 import math
+import random
+import time
+
+from constants import *
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from constants import *
 
 
 # Настройка логирования

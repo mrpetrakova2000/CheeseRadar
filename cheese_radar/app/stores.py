@@ -1,7 +1,7 @@
-from abc import ABC
 import os
-from dotenv import load_dotenv
+from abc import ABC
 
+from dotenv import load_dotenv
 from utils import *
 
 load_dotenv()

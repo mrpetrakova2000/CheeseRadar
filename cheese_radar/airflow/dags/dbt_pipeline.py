@@ -1,6 +1,8 @@
 from __future__ import annotations
-from datetime import timedelta, datetime
+
 import logging
+from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 

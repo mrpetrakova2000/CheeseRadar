@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
-from bs4 import BeautifulSoup
-import undetected_chromedriver as uc
 
-from stores import *
-from utils import *
+import undetected_chromedriver as uc
+from bs4 import BeautifulSoup
 from constants import *
 from mongo import mongodb_handler
+from stores import *
+from utils import *
 
 
 class ProductScraper:
