@@ -1,12 +1,13 @@
-import requests
 import logging
-from time import sleep
 import os
+from time import sleep
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-API_URL = f"http://{os.getenv("APP_HOST")}:5080"
+API_URL = f"http://{os.getenv('APP_HOST')}:5080"
 
 
 def call_scraper_api(endpoint, payload=None):
@@ -30,9 +31,3 @@ def call_scraper_api(endpoint, payload=None):
 def scrape_magnit():
     """Скрапинг Магнита"""
     return call_scraper_api("scrape", {"store": "magnit"})
-
-
-def scrape_perekrestok():
-    """Скрапинг Перекрестка"""
-    sleep(5)
-    return call_scraper_api("scrape", {"store": "perekrestok"})

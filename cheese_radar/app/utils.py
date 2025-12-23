@@ -1,11 +1,12 @@
 import logging
-import time
-import random
 import math
+import random
+import time
+
+from constants import *
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from constants import *
 
 
 # Настройка логирования
@@ -14,10 +15,7 @@ def setup_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
@@ -55,12 +53,14 @@ def simulate_human_interaction(driver):
             time.sleep(random.uniform(0.8, 1.5))
 
             if random.random() > 0.7:
-                driver.execute_script("""
+                driver.execute_script(
+                    """
                     window.scrollBy({
                         top: -100,
                         behavior: 'smooth'
                     });
-                """)
+                """
+                )
                 time.sleep(random.uniform(0.5, 1))
 
     except Exception as e:
@@ -74,8 +74,8 @@ def simulate_human_mouse_movement(driver):
 
         # Получаем размеры окна
         window_size = driver.get_window_size()
-        width = window_size['width']
-        height = window_size['height']
+        width = window_size["width"]
+        height = window_size["height"]
 
         # Генерируем случайные точки для движения мыши
         num_points = random.randint(3, 7)
@@ -91,7 +91,7 @@ def simulate_human_mouse_movement(driver):
             for step in range(steps):
                 step_x = last_x + (x - last_x) * (step / steps)
                 step_y = last_y + (y - last_y) * (step / steps)
-                actions.move_to_element_with_offset(driver.find_element(By.TAG_NAME, 'body'), step_x, step_y)
+                actions.move_to_element_with_offset(driver.find_element(By.TAG_NAME, "body"), step_x, step_y)
                 actions.pause(random.uniform(0.01, 0.05))
 
             last_x, last_y = x, y
@@ -127,13 +127,15 @@ def random_scroll_behavior(driver):
                 scroll_amount = random.randint(100, 500)
 
             # Плавный скролл через JS с разной скоростью
-            speed = random.choice(['smooth', 'auto'])
-            driver.execute_script(f"""
+            speed = random.choice(["smooth", "auto"])
+            driver.execute_script(
+                f"""
                 window.scrollBy({{
                     top: {scroll_amount * direction},
                     behavior: '{speed}'
                 }});
-            """)
+            """
+            )
 
             # Случайная пауза между скроллами (разная)
             time.sleep(random.uniform(0.5, 2.5))
@@ -141,22 +143,26 @@ def random_scroll_behavior(driver):
             # Иногда делаем маленький обратный скролл (40% вероятность)
             if random.random() < 0.4:
                 small_back = random.randint(50, 200) * -direction
-                driver.execute_script(f"""
+                driver.execute_script(
+                    f"""
                     window.scrollBy({{
                         top: {small_back},
                         behavior: 'smooth'
                     }});
-                """)
+                """
+                )
                 time.sleep(random.uniform(0.2, 0.8))
 
         # Иногда возвращаемся к началу
         if random.random() < 0.2:
-            driver.execute_script("""
+            driver.execute_script(
+                """
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
-            """)
+            """
+            )
             time.sleep(random.uniform(0.5, 1.5))
 
     except Exception as e:
@@ -173,7 +179,7 @@ def simulate_reading_time(driver, min_time=2, max_time=5):
         actions_during_reading = random.choices(
             ["scroll", "mouse", "wait", "mini_scroll", "click"],
             weights=[0.4, 0.3, 0.2, 0.05, 0.05],
-            k=random.randint(1, 3)
+            k=random.randint(1, 3),
         )
 
         for action in actions_during_reading:
@@ -204,8 +210,7 @@ def pyaterochka_anti_ban_delay(driver, page_num=None, is_session_break=False):
     try:
         if is_session_break:
             # Длительный перерыв между сессиями
-            break_time = random.uniform(PYATEROCHKA_TIMING["SESSION_BREAK_MIN"],
-                                        PYATEROCHKA_TIMING["SESSION_BREAK_MAX"])
+            break_time = random.uniform(PYATEROCHKA_TIMING["SESSION_BREAK_MIN"], PYATEROCHKA_TIMING["SESSION_BREAK_MAX"])
             logger.info(f"[Пятерочка] Длительный перерыв между сессиями: {break_time:.1f} сек")
             time.sleep(break_time)
             return
@@ -213,27 +218,27 @@ def pyaterochka_anti_ban_delay(driver, page_num=None, is_session_break=False):
         # Базовое время ожидания с рандомизацией
         if page_num is None or page_num == 1:
             # Для первой страницы больше времени
-            base_wait = random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"],
-                                       PYATEROCHKA_TIMING["MAX_PAGE_LOAD"])
+            base_wait = random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"])
             logger.info(f"[Пятерочка] Задержка для страницы: {base_wait:.1f} сек")
         else:
             # Для последующих страниц меньше времени (но с вариацией)
             base_multiplier = 0.7 + (random.random() * 0.3)  # 0.7-1.0
-            base_wait = random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"],
-                                       PYATEROCHKA_TIMING["MAX_PAGE_LOAD"]) * base_multiplier
+            base_wait = random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"]) * base_multiplier
             logger.info(f"[Пятерочка] Задержка для страницы {page_num}: {base_wait:.1f} сек")
 
         # Ждем базовое время
         time.sleep(base_wait)
 
         # Разные комбинации действий после загрузки
-        action_combination = random.choice([
-            ["mouse", "scroll", "read"],
-            ["scroll", "mouse"],
-            ["read", "mouse", "mini_scroll"],
-            ["scroll", "read"],
-            ["mouse"]
-        ])
+        action_combination = random.choice(
+            [
+                ["mouse", "scroll", "read"],
+                ["scroll", "mouse"],
+                ["read", "mouse", "mini_scroll"],
+                ["scroll", "read"],
+                ["mouse"],
+            ]
+        )
 
         for action in action_combination:
             if action == "mouse" and random.random() < PYATEROCHKA_TIMING["RANDOM_MOUSE_MOVE"]:
@@ -288,10 +293,7 @@ def change_viewport_randomly(driver):
 
         # Иногда меняем положение окна
         if random.random() < 0.3:
-            driver.set_window_position(
-                random.randint(0, 100),
-                random.randint(0, 100)
-            )
+            driver.set_window_position(random.randint(0, 100), random.randint(0, 100))
             time.sleep(0.3)
 
     except Exception as e:
@@ -313,7 +315,7 @@ def simulate_browsing_session(driver, duration_min=10, duration_max=30):
             action = random.choices(
                 ["scroll", "mouse", "wait", "click", "back_forth", "search"],
                 weights=[0.3, 0.25, 0.2, 0.1, 0.1, 0.05],
-                k=1
+                k=1,
             )[0]
 
             if action == "scroll":
@@ -331,10 +333,7 @@ def simulate_browsing_session(driver, duration_min=10, duration_max=30):
             elif action == "click":
                 try:
                     # Ищем кликабельные элементы
-                    clickable = driver.find_elements(
-                        By.CSS_SELECTOR,
-                        "a, button, [role='button'], .product-card, .category-item"
-                    )
+                    clickable = driver.find_elements(By.CSS_SELECTOR, "a, button, [role='button'], .product-card, .category-item")
                     if clickable:
                         element = random.choice(clickable[:8])  # Берем из первых 8
                         ActionChains(driver).move_to_element(element).pause(0.3).click().perform()
@@ -357,8 +356,7 @@ def simulate_browsing_session(driver, duration_min=10, duration_max=30):
             elif action == "search":
                 # Имитация поиска
                 try:
-                    search_box = driver.find_elements(By.CSS_SELECTOR,
-                                                      "input[type='search'], input[placeholder*='поиск']")
+                    search_box = driver.find_elements(By.CSS_SELECTOR, "input[type='search'], input[placeholder*='поиск']")
                     if search_box:
                         search = search_box[0]
                         ActionChains(driver).move_to_element(search).click().perform()
@@ -395,7 +393,7 @@ def detect_blocked_page(driver):
             "робот",
             "robot",
             "подтвердите что вы не робот",
-            "cloudflare"
+            "cloudflare",
         ]
 
         for keyword in blocked_keywords:
@@ -407,7 +405,7 @@ def detect_blocked_page(driver):
             "div[class*='captcha']",
             "iframe[src*='recaptcha']",
             "div[class*='recaptcha']",
-            "div[id*='captcha']"
+            "div[id*='captcha']",
         ]
 
         for selector in captcha_selectors:

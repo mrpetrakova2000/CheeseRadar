@@ -1,17 +1,18 @@
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from scraper_tasks import scrape_magnit
 
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2025, 12, 7),
-    'retries': 2,
-    'retry_delay': timedelta(minutes=5),
-    'max_active_runs': 1,
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": datetime(2025, 12, 7),
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "max_active_runs": 1,
 }
 
 logger = logging.getLogger(__name__)
@@ -25,8 +26,8 @@ def scrape_magnit_with_check():
 
     # Проверяем результат от API
     if isinstance(result, dict):
-        total_in_database = result.get('total_in_database', 0)
-        new_products_saved = result.get('new_products_saved', 0)
+        total_in_database = result.get("total_in_database", 0)
+        new_products_saved = result.get("new_products_saved", 0)
 
         # Если сохранено 0 новых продуктов - это ошибка
         if new_products_saved == 0:
@@ -50,22 +51,22 @@ def scrape_magnit_with_check():
 
 
 with DAG(
-        'scrape_magnit',
-        default_args=default_args,
-        description='Скрапинг магазина Магнит',
-        schedule_interval='0 7,19 * * *',
-        catchup=False,
-        tags=['scraping', 'magnit'],
+    "scrape_magnit",
+    default_args=default_args,
+    description="Скрапинг магазина Магнит",
+    schedule_interval="0 7,19 * * *",
+    catchup=False,
+    tags=["scraping", "magnit"],
 ) as dag:
-    start = EmptyOperator(task_id='start')
+    start = EmptyOperator(task_id="start")
 
     scrape_task = PythonOperator(
-        task_id='scrape_magnit_data',
+        task_id="scrape_magnit_data",
         python_callable=scrape_magnit_with_check,
         execution_timeout=timedelta(minutes=30),
         retries=1,
     )
 
-    end = EmptyOperator(task_id='end')
+    end = EmptyOperator(task_id="end")
 
     start >> scrape_task >> end

@@ -1,0 +1,31 @@
+[MASTER]
+jobs=0
+
+[MESSAGES CONTROL]
+disable=
+    pointless-statement,
+    logging-not-lazy,
+    f-string-without-interpolation,
+    invalid-envvar-default,
+    unnecessary-pass,
+    broad-exception-raised,
+    chained-comparison,
+    too-many-instance-attributes,
+    no-else-raise,
+    no-else-return,
+    unused-argument,
+    raise-missing-from,
+    missing-docstring,
+    too-few-public-methods
+
+[FORMAT]
+max-line-length=120
+
+[BASIC]
+good-names=i,j,k,ex,_,df,db,id,app,ti,conn,cur,context,err,e
+
+[DESIGN]
+max-args=8
+max-locals=25
+max-statements=80
+max-branches=25

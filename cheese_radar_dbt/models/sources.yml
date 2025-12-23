@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: postgres
+    database: cheeseradar
+    schema: raw
+    tables:
+      - name: products
+    freshness:
+      warn_after: { count: 1, period: day }
+      error_after: { count: 2, period: day }
+    loaded_at_field: created_at

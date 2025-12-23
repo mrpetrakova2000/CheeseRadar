@@ -1,38 +1,23 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    wget \
-    gnupg \
-    # минимальный набор библиотек для Chromium
-    libnss3 \
-    libatk-bridge2.0-0 \
-    libxkbcommon0 \
-    libgbm1 \
-    libasound2 \
-    libatspi2.0-0 \
-    libxshmfence1 \
+RUN apt-get update && apt-get install -y \
+    wget gnupg ca-certificates \
+    libglib2.0-0 libnss3 libgdk-pixbuf-2.0-0 libgtk-3-0 libxss1 libasound2 \
+    xvfb unzip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q -O chrome.deb https://storage.googleapis.com/chrome-for-testing-public/143.0.7499.40/linux64/chrome-linux64.zip && \
-    unzip chrome-linux64.zip && \
-    mv chrome-linux64 /opt/google-chrome && \
-    ln -sf /opt/google-chrome/chrome /usr/bin/google-chrome && \
-    rm chrome-linux64.zip
-
-RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/143.0.7499.40/linux64/chromedriver-linux64.zip && \
-    unzip chromedriver-linux64.zip && \
- mv chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
- chmod +x /usr/bin/chromedriver && \
- rm -rf chromedriver-linux64.zip
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
-ENV PYTHONUNBUFFERED=1
-
+# Запуск
 CMD ["python3", "main.py"]

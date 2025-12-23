@@ -1,11 +1,11 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import uvicorn
 import logging
 from typing import Dict
 
-from stores import MagnitScraper, PerekrestokScraper, LentaScraper
+import uvicorn
+from fastapi import FastAPI, HTTPException
 from product_scraper import ProductScraper
+from pydantic import BaseModel
+from stores import LentaScraper, MagnitScraper, PerekrestokScraper
 from utils import setup_logging
 
 setup_logging()
@@ -31,15 +31,12 @@ async def scrape_store(request: ScraperRequest) -> ScrapeResponse:
 
     store_map: Dict[str, tuple] = {
         "magnit": ("Магнит", MagnitScraper),
-        "perekrestok": ("Перекрёсток", PerekrestokScraper),
-        "lenta": ("Лента", LentaScraper),
+        # "perekrestok": ("Перекрёсток", PerekrestokScraper),
+        # "lenta": ("Лента", LentaScraper),
     }
 
     if request.store not in store_map:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Неизвестный магазин: {request.store}"
-        )
+        raise HTTPException(status_code=400, detail=f"Неизвестный магазин: {request.store}")
 
     try:
         display_name, scraper_class = store_map[request.store]
@@ -53,7 +50,7 @@ async def scrape_store(request: ScraperRequest) -> ScrapeResponse:
             status="success",
             store=display_name,
             total_in_database=total_in_db,
-            new_products_saved=new_saved
+            new_products_saved=new_saved,
         )
 
     except Exception as e:

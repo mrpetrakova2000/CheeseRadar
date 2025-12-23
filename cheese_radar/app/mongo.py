@@ -1,8 +1,9 @@
+import logging
 import os
 from datetime import datetime
-from pymongo import MongoClient
+
 from dotenv import load_dotenv
-import logging
+from pymongo import MongoClient
 
 load_dotenv()
 
@@ -27,12 +28,7 @@ class MongoDBHandler:
 
             self.logger.info(f"Подключение к MongoDB: {host}:{port}")
 
-            self.client = MongoClient(
-                host=host,
-                port=port,
-                username=username,
-                password=password
-            )
+            self.client = MongoClient(host=host, port=port, username=username, password=password)
             self.db = self.client["prod"]
             self.collection = self.db["products"]
 
@@ -56,15 +52,10 @@ class MongoDBHandler:
         try:
             total_processed = len(products)
             batch_to_insert = []
-            now = datetime.now()
 
             for product in products:
                 try:
-                    doc = {
-                        **product,
-                        "store": store_name,
-                        "scraped_at": now
-                    }
+                    doc = {**product, "store": store_name, "scraped_at": product["date_time"]}
 
                     batch_to_insert.append(doc)
 
@@ -90,10 +81,7 @@ class MongoDBHandler:
             return []
 
         try:
-            products = list(self.collection.find(
-                {"store": store_name},
-                {"_id": 0}
-            ).sort("scraped_at", -1).limit(limit))
+            products = list(self.collection.find({"store": store_name}, {"_id": 0}).sort("scraped_at", -1).limit(limit))
 
             self.logger.info(f"Загружено {len(products)} товаров для магазина {store_name}")
             return products
