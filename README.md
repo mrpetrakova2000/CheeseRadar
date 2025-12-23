@@ -77,8 +77,7 @@ CheeseRadar/
 Витрины построены по слоям STG -> ODS -> DM.
 | Схема | Таблица | Описание | Источник |
 | :---  | :---    | :---     | :---     |
-| stg | stg_postgres_raw | Сырые данные из MongoDB без трансформаций
- | raw.products |
+| stg | stg_postgres_raw | Сырые данные из MongoDB без трансформаций | raw.products |
 | ods | ods_cheese_latest_load | Данные по сырам из последней загрузки с базовыми рассчитанными признаками | stg.stg_postgres_raw |
 | ods | ods_cheese_price_history | История цен на сыры с расчетными полями по всем загрузкам | stg.stg_postgres_raw |
 | dm | dm_cheese_actual_prices | Актуальные цены на сыры и ключевые бизнес‑метрики по последней загрузке | ods.ods_cheese_latest_load |
