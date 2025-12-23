@@ -9,8 +9,7 @@ STORE_URLS = {
 
 SELECTORS = {
     "pyaterochka": {
-        "product": lambda tag: tag.get("data-qa", "")
-        and re.compile(r"product-card-\d+$").match(tag.get("data-qa", "")),
+        "product": lambda tag: tag.get("data-qa", "") and re.compile(r"product-card-\d+$").match(tag.get("data-qa", "")),
         "name": ".css-ijz3vq",
         "price": ".css-1j4x839",
         "price_cents": ".css-30bcam",

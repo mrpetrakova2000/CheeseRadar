@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from sqlalchemy import (Column, DateTime, Integer, String, create_engine, func,
-                        text)
+from sqlalchemy import Column, DateTime, Integer, String, create_engine, func, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -62,8 +61,7 @@ def move_products_to_postgres(store_name=None):
     except Exception as e:
         logger.error(f"Ошибка подключения к PostgreSQL: {e}")
         logger.error(
-            f"Параметры: host={os.getenv('POSTGRES_HOST')}, "
-            f"port={os.getenv('POSTGRES_PORT')}, db={os.getenv('POSTGRES_DB')}"
+            f"Параметры: host={os.getenv('POSTGRES_HOST')}, " f"port={os.getenv('POSTGRES_PORT')}, db={os.getenv('POSTGRES_DB')}"
         )
         return {
             "status": "error",

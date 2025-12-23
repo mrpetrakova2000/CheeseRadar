@@ -45,9 +45,7 @@ with DAG(
         ),
         "max_table_rows": Param(default=10, type="integer", minimum=1, maximum=50, title="Максимум строк в таблице"),
         "truncate_text": Param(default=True, type="boolean", title="Обрезать длинный текст"),
-        "max_text_length": Param(
-            default=30, type="integer", minimum=10, maximum=100, title="Максимальная длина текста"
-        ),
+        "max_text_length": Param(default=30, type="integer", minimum=10, maximum=100, title="Максимальная длина текста"),
     },
 ) as dag:
 

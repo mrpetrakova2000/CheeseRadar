@@ -108,14 +108,10 @@ class ProductScraper:
             existing_products = mongodb_handler.get_store_products(self.store.store_name)
 
             if not existing_products:
-                self.logger.info(
-                    f"[{self.store.store_name}] В MongoDB нет товаров для магазина {self.store.store_name}"
-                )
+                self.logger.info(f"[{self.store.store_name}] В MongoDB нет товаров для магазина {self.store.store_name}")
                 return all_products
 
-            self.logger.info(
-                f"[{self.store.store_name}] Загружено {len(existing_products)} существующих товаров из MongoDB"
-            )
+            self.logger.info(f"[{self.store.store_name}] Загружено {len(existing_products)} существующих товаров из MongoDB")
 
             for product in existing_products:
                 try:
@@ -138,9 +134,7 @@ class ProductScraper:
                         )
 
                 except Exception as e:
-                    self.logger.error(
-                        f"[{self.store.store_name}] Ошибка при обработке существующего товара из MongoDB: {e}"
-                    )
+                    self.logger.error(f"[{self.store.store_name}] Ошибка при обработке существующего товара из MongoDB: {e}")
                     continue
 
         except Exception as e:
@@ -242,9 +236,7 @@ class ProductScraper:
 
                         if not parsed_products:
                             empty_pages_count += 1
-                            self.logger.info(
-                                f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})"
-                            )
+                            self.logger.info(f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})")
                         else:
                             empty_pages_count = 0
 
@@ -287,9 +279,7 @@ class ProductScraper:
 
                     if not parsed_products:
                         empty_pages_count += 1
-                        self.logger.info(
-                            f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})"
-                        )
+                        self.logger.info(f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})")
                     else:
                         empty_pages_count = 0
 

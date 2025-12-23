@@ -210,9 +210,7 @@ def pyaterochka_anti_ban_delay(driver, page_num=None, is_session_break=False):
     try:
         if is_session_break:
             # Длительный перерыв между сессиями
-            break_time = random.uniform(
-                PYATEROCHKA_TIMING["SESSION_BREAK_MIN"], PYATEROCHKA_TIMING["SESSION_BREAK_MAX"]
-            )
+            break_time = random.uniform(PYATEROCHKA_TIMING["SESSION_BREAK_MIN"], PYATEROCHKA_TIMING["SESSION_BREAK_MAX"])
             logger.info(f"[Пятерочка] Длительный перерыв между сессиями: {break_time:.1f} сек")
             time.sleep(break_time)
             return
@@ -225,10 +223,7 @@ def pyaterochka_anti_ban_delay(driver, page_num=None, is_session_break=False):
         else:
             # Для последующих страниц меньше времени (но с вариацией)
             base_multiplier = 0.7 + (random.random() * 0.3)  # 0.7-1.0
-            base_wait = (
-                random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"])
-                * base_multiplier
-            )
+            base_wait = random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"]) * base_multiplier
             logger.info(f"[Пятерочка] Задержка для страницы {page_num}: {base_wait:.1f} сек")
 
         # Ждем базовое время
@@ -338,9 +333,7 @@ def simulate_browsing_session(driver, duration_min=10, duration_max=30):
             elif action == "click":
                 try:
                     # Ищем кликабельные элементы
-                    clickable = driver.find_elements(
-                        By.CSS_SELECTOR, "a, button, [role='button'], .product-card, .category-item"
-                    )
+                    clickable = driver.find_elements(By.CSS_SELECTOR, "a, button, [role='button'], .product-card, .category-item")
                     if clickable:
                         element = random.choice(clickable[:8])  # Берем из первых 8
                         ActionChains(driver).move_to_element(element).pause(0.3).click().perform()
@@ -363,9 +356,7 @@ def simulate_browsing_session(driver, duration_min=10, duration_max=30):
             elif action == "search":
                 # Имитация поиска
                 try:
-                    search_box = driver.find_elements(
-                        By.CSS_SELECTOR, "input[type='search'], input[placeholder*='поиск']"
-                    )
+                    search_box = driver.find_elements(By.CSS_SELECTOR, "input[type='search'], input[placeholder*='поиск']")
                     if search_box:
                         search = search_box[0]
                         ActionChains(driver).move_to_element(search).click().perform()
