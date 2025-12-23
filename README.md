@@ -18,19 +18,19 @@ CheeseRadar/
 ├── .pylintrc # Конфигурация линтера
 ├── README.md # Документация
 │
-├── cheese_radar/ 
+├── cheese_radar/
 | ├── app/
 │   ├── data/ # Самплы данных
 │   ├── constants.py # Константы для парсинга данных
 │   ├── docker-compose.yml
 │   ├── Dockerfile
-│   ├── main.py 
+│   ├── main.py
 │   ├── mongo.py # Настройка записи в Mongo
 │   ├── product_scraper.py # Парсинг магазинов
 │   ├── requirements.txt
 │   ├── stores.py # Конфигурации магазинов
 │   ├── utils.py # Дополнительные функции для парсинга
-|   └── .env 
+|   └── .env
 | ├── airflow/ # Airflow оркестрация
 │   ├── Dockerfile
 │   ├── entrypoint.sh
@@ -52,7 +52,7 @@ CheeseRadar/
 На текущий момент сбор осуществляется с сайта Магнит (www.magnit.ru). Разработки по магазинам от X5 временно заморожены из-за возникших трудностей, связанных с усилением антибот-защиты их сайтов. Планируется дальнейшее исследование вариантов и расширение перечня источников.
 
 ## Fastapi приложение
-Представляет собой REST-сервис, который по эндпойнту /scrape первично извлекает данные о ценах и характеристиках товара с сайтов продуктовых магазинов и сохраняет в Mongo DB. 
+Представляет собой REST-сервис, который по эндпойнту /scrape первично извлекает данные о ценах и характеристиках товара с сайтов продуктовых магазинов и сохраняет в Mongo DB.
 
 ## Пайплайн
 1. DAG: scrape_magnit. Вызов API /scrape, инкрементальная запись в MongoDB (prod.products). Сбор данных автоматически запускается 2 раза в день с перерывом в 12 часов (7 и 19 часов).
@@ -70,11 +70,11 @@ CheeseRadar/
 
 ## Инфраструктура
 2 Docker-сервиса:
-* FastApi (Python 3.11 + Selenium + Beatiful Soup) + Mongo 
+* FastApi (Python 3.11 + Selenium + Beatiful Soup) + Mongo
 * Airflow 2.10.5-python3.11 + Postgres 14 + Elementary Report container
 
 ## DBT: витрины
-Витрины построены по слоям STG -> ODS -> DM. 
+Витрины построены по слоям STG -> ODS -> DM.
 | Схема | Таблица | Описание | Источник |
 | :---  | :---    | :---     | :---     |
 | stg | stg_postgres_raw | Сырые данные из MongoDB без трансформаций
@@ -87,4 +87,4 @@ CheeseRadar/
 | dm | dm_cheese_top_products | Топ‑продукты по категориям за последнюю загрузку | ods.ods_cheese_latest_load |
 
 ## Аналитика по витринам
-Приведена в файле cheese_analytics.ipynb. 
+Приведена в файле cheese_analytics.ipynb.

@@ -65,7 +65,7 @@
 {% endmacro %}
 
 {% macro is_sliced(name) %}
-    CASE 
+    CASE
         WHEN LOWER({{ name }}) LIKE '%нарезка%' THEN TRUE
         WHEN LOWER({{ name }}) LIKE '%слайс%' THEN TRUE
         ELSE FALSE
@@ -73,17 +73,17 @@
 {% endmacro %}
 
 {% macro is_bzmj(name) %}
-    CASE 
-        WHEN LOWER({{ name }}) LIKE '%бзмж%' THEN TRUE 
+    CASE
+        WHEN LOWER({{ name }}) LIKE '%бзмж%' THEN TRUE
         ELSE FALSE
     END
 {% endmacro %}
 
 {% macro is_creamy(name) %}
-    CASE 
+    CASE
         WHEN (LOWER({{ name }}) LIKE '%плавлен%' OR LOWER({{ name }}) LIKE '%творожн%')
              AND LOWER({{ name }}) NOT LIKE '%ломт%'
-        THEN TRUE 
+        THEN TRUE
         ELSE FALSE
     END
 {% endmacro %}

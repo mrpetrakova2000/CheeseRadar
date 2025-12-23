@@ -14,9 +14,9 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__PARALLELISM: 32
     AIRFLOW__CORE__DAG_CONCURRENCY: 16
     AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 16
-    DBT_PROJECT_DIR: /opt/airflow/dbt  
+    DBT_PROJECT_DIR: /opt/airflow/dbt
     DBT_PROFILES_DIR: /opt/airflow/dbt
-    POSTGRES_HOST: postgres 
+    POSTGRES_HOST: postgres
     POSTGRES_USER: airflow
     POSTGRES_PASSWORD: airflow
     POSTGRES_DB: cheeseradar
@@ -26,7 +26,7 @@ x-airflow-common: &airflow-common
     - ../../cheese_radar_dbt:/opt/airflow/dbt
     - ./plugins:/opt/airflow/plugins
     - ./requirements.txt:/docker-context-files/requirements.txt
-    - ../../cheese_radar_dbt/edr_target:/opt/airflow/elementary_reports 
+    - ../../cheese_radar_dbt/edr_target:/opt/airflow/elementary_reports
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}"
   depends_on:
     postgres:
@@ -86,12 +86,12 @@ services:
 
   elementary-reports:
     image: python:3.11-alpine
-    ports: 
+    ports:
     - "65080:8081"
-    volumes: 
+    volumes:
       -  ../../cheese_radar_dbt/edr_target/elementary_report.html:/app/elementary_report.html
     working_dir: /app
-    command: python -m http.server 8081 --bind 0.0.0.0 
+    command: python -m http.server 8081 --bind 0.0.0.0
 
 volumes:
   postgres-db-volume:

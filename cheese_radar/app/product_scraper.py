@@ -22,19 +22,19 @@ class ProductScraper:
         options = uc.ChromeOptions()
 
         # Основные опции
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-notifications')
-        options.add_argument('--disable-popup-blocking')
-        options.add_argument('--no-first-run')
-        options.add_argument('--no-service-autorun')
-        options.add_argument('--password-store=basic')
-        options.add_argument('--disable-extensions')
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-notifications")
+        options.add_argument("--disable-popup-blocking")
+        options.add_argument("--no-first-run")
+        options.add_argument("--no-service-autorun")
+        options.add_argument("--password-store=basic")
+        options.add_argument("--disable-extensions")
 
         selected_ua = get_random_user_agent()
-        options.add_argument(f'--user-agent={selected_ua}')
+        options.add_argument(f"--user-agent={selected_ua}")
 
         prefs = {
             "credentials_enable_service": False,
@@ -51,14 +51,18 @@ class ProductScraper:
         )
 
         # Устанавливаем скрипты для обхода детекции
-        driver.execute_script("""
+        driver.execute_script(
+            """
             Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
             Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
             Object.defineProperty(navigator, 'languages', {get: () => ['ru-RU', 'ru', 'en-US', 'en']});
             window.chrome = {runtime: {}};
-        """)
+        """
+        )
 
-        self.logger.info(f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}...")
+        self.logger.info(
+            f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}..."
+        )
         return driver
 
     def _normal_page_load(self, url):
@@ -87,7 +91,8 @@ class ProductScraper:
             if new_height == last_height:
                 scroll_attempts += 1
                 self.logger.debug(
-                    f"[{self.store.store_name}] Высота не изменилась, попытка {scroll_attempts}/{max_scroll_attempts}")
+                    f"[{self.store.store_name}] Высота не изменилась, попытка {scroll_attempts}/{max_scroll_attempts}"
+                )
             else:
                 scroll_attempts = 0
                 last_height = new_height
@@ -106,34 +111,38 @@ class ProductScraper:
 
             if not existing_products:
                 self.logger.info(
-                    f"[{self.store.store_name}] В MongoDB нет товаров для магазина {self.store.store_name}")
+                    f"[{self.store.store_name}] В MongoDB нет товаров для магазина {self.store.store_name}"
+                )
                 return all_products
 
             self.logger.info(
-                f"[{self.store.store_name}] Загружено {len(existing_products)} существующих товаров из MongoDB")
+                f"[{self.store.store_name}] Загружено {len(existing_products)} существующих товаров из MongoDB"
+            )
 
             for product in existing_products:
                 try:
-                    name = product.get('name', '').strip()
-                    price = str(product.get('price', '')).strip()
-                    store = str(product.get('store', '')).strip()
-                    date_time = str(product.get('date_time', '')).strip()
+                    name = product.get("name", "").strip()
+                    price = str(product.get("price", "")).strip()
+                    store = str(product.get("store", "")).strip()
+                    date_time = str(product.get("date_time", "")).strip()
 
                     if name and price and store:
-
                         # Сохраняем продукт для возврата
-                        all_products.append({
-                            "name": name,
-                            "price": price,
-                            "store": store,
-                            "date_time": date_time,
-                            "discount": product.get('discount'),
-                            "rating": product.get('rating')
-                        })
+                        all_products.append(
+                            {
+                                "name": name,
+                                "price": price,
+                                "store": store,
+                                "date_time": date_time,
+                                "discount": product.get("discount"),
+                                "rating": product.get("rating"),
+                            }
+                        )
 
                 except Exception as e:
                     self.logger.error(
-                        f"[{self.store.store_name}] Ошибка при обработке существующего товара из MongoDB: {e}")
+                        f"[{self.store.store_name}] Ошибка при обработке существующего товара из MongoDB: {e}"
+                    )
                     continue
 
         except Exception as e:
@@ -154,7 +163,9 @@ class ProductScraper:
         else:
             products = soup.select(self.store.product_selector)
 
-        self.logger.info(f"[{self.store.store_name}] Найдено элементов на странице: {len(products)}")
+        self.logger.info(
+            f"[{self.store.store_name}] Найдено элементов на странице: {len(products)}"
+        )
 
         parsed_products = []
 
@@ -180,20 +191,22 @@ class ProductScraper:
 
                 # Вес (если есть)
                 weight_elem = item.select_one(self.store.weight_selector)
-                weight = weight_elem.text.strip() if weight_elem else ''
+                weight = weight_elem.text.strip() if weight_elem else ""
 
                 # Проверяем обязательные поля
                 if name is None or price is None:
                     continue
 
-                parsed_products.append({
-                    "name": name + " " + weight,
-                    "price": price,
-                    "discount": discount,
-                    "rating": rating,
-                    "date_time": current_datetime,
-                    "store": self.store.store_name
-                })
+                parsed_products.append(
+                    {
+                        "name": name + " " + weight,
+                        "price": price,
+                        "discount": discount,
+                        "rating": rating,
+                        "date_time": current_datetime,
+                        "store": self.store.store_name,
+                    }
+                )
 
             except Exception as e:
                 self.logger.debug(f"[{self.store.store_name}] Ошибка при парсинге товара: {e}")
@@ -234,12 +247,15 @@ class ProductScraper:
                         if not parsed_products:
                             empty_pages_count += 1
                             self.logger.info(
-                                f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})")
+                                f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})"
+                            )
                         else:
                             empty_pages_count = 0
 
                             for product in parsed_products:
-                                product_key = f"{product['name']}_{product['price']}_{product['store']}"
+                                product_key = (
+                                    f"{product['name']}_{product['price']}_{product['store']}"
+                                )
 
                                 if not product_key or product_key in seen_products:
                                     continue
@@ -250,13 +266,16 @@ class ProductScraper:
                                 new_products_total += 1
 
                             self.logger.info(
-                                f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}")
+                                f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}"
+                            )
 
                         page += 1
                         time.sleep(random.uniform(SHORT_PAUSE_TIME - 1, SHORT_PAUSE_TIME + 1))
 
                     except Exception as e:
-                        self.logger.error(f"[{self.store.store_name}] Ошибка на странице {page}: {e}")
+                        self.logger.error(
+                            f"[{self.store.store_name}] Ошибка на странице {page}: {e}"
+                        )
                         empty_pages_count += 1
                         page += 1
                         time.sleep(LONG_PAUSE_TIME)
@@ -277,7 +296,8 @@ class ProductScraper:
                     if not parsed_products:
                         empty_pages_count += 1
                         self.logger.info(
-                            f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})")
+                            f"[{self.store.store_name}] Пустая страница ({empty_pages_count}/{max_empty_pages})"
+                        )
                     else:
                         empty_pages_count = 0
 
@@ -293,7 +313,8 @@ class ProductScraper:
                             new_products_total += 1
 
                         self.logger.info(
-                            f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}")
+                            f"[{self.store.store_name}] Страница {page} загружена, новых товаров: {len(parsed_products)}"
+                        )
 
                         page += 1
                         time.sleep(random.uniform(SHORT_PAUSE_TIME - 1, SHORT_PAUSE_TIME + 1))
@@ -306,16 +327,19 @@ class ProductScraper:
             # Сохранение новых товаров в MongoDB
             if scraped_products:
                 mongo_processed, mongo_new = mongodb_handler.save_products(
-                    scraped_products,
-                    self.store.store_name
+                    scraped_products, self.store.store_name
                 )
-                self.logger.info(f"[{self.store.store_name}] В MongoDB добавлено {mongo_new} новых товаров")
+                self.logger.info(
+                    f"[{self.store.store_name}] В MongoDB добавлено {mongo_new} новых товаров"
+                )
             else:
                 mongo_processed, mongo_new = 0, 0
                 self.logger.warning(f"[{self.store.store_name}] Нет новых товаров для сохранения")
 
             self.logger.info(f"[{self.store.store_name}] ИТОГИ:")
-            self.logger.info(f"[{self.store.store_name}]   Всего в базе: {len(all_products)} товаров")
+            self.logger.info(
+                f"[{self.store.store_name}]   Всего в базе: {len(all_products)} товаров"
+            )
             self.logger.info(f"[{self.store.store_name}]   Найдено новых: {new_products_total}")
             self.logger.info(f"[{self.store.store_name}]   Сохранено в MongoDB: {mongo_new}")
 
