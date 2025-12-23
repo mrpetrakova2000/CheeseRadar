@@ -1,0 +1,22 @@
+[MASTER]
+jobs=4
+
+[MESSAGES CONTROL]
+disable=
+    missing-docstring,
+    too-few-public-methods,
+    import-error,
+    line-too-long
+
+[FORMAT]
+max-line-length=200
+
+[BASIC]
+good-names=i,j,k,ex,_,df,db
+
+[DESIGN]
+max-args=8
+max-locals=25
+
+[REPORTS]
+output-format=colorized
