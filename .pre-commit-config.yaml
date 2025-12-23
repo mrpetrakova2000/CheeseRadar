@@ -10,3 +10,22 @@ repos:
     hooks:
       - id: black
         args: [--line-length=100]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black", "--line-length=100"]
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: [
+          "--rcfile=.pylintrc",
+          "-rn",  # Only show messages, not reports
+          "-sn"   # Don't show the score
+        ]
