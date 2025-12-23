@@ -60,9 +60,7 @@ class ProductScraper:
         """
         )
 
-        self.logger.info(
-            f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}..."
-        )
+        self.logger.info(f"[{self.store.store_name}] Драйвер настроен, User-Agent: {selected_ua[:50]}...")
         return driver
 
     def _normal_page_load(self, url):
@@ -163,9 +161,7 @@ class ProductScraper:
         else:
             products = soup.select(self.store.product_selector)
 
-        self.logger.info(
-            f"[{self.store.store_name}] Найдено элементов на странице: {len(products)}"
-        )
+        self.logger.info(f"[{self.store.store_name}] Найдено элементов на странице: {len(products)}")
 
         parsed_products = []
 
@@ -253,9 +249,7 @@ class ProductScraper:
                             empty_pages_count = 0
 
                             for product in parsed_products:
-                                product_key = (
-                                    f"{product['name']}_{product['price']}_{product['store']}"
-                                )
+                                product_key = f"{product['name']}_{product['price']}_{product['store']}"
 
                                 if not product_key or product_key in seen_products:
                                     continue
@@ -273,9 +267,7 @@ class ProductScraper:
                         time.sleep(random.uniform(SHORT_PAUSE_TIME - 1, SHORT_PAUSE_TIME + 1))
 
                     except Exception as e:
-                        self.logger.error(
-                            f"[{self.store.store_name}] Ошибка на странице {page}: {e}"
-                        )
+                        self.logger.error(f"[{self.store.store_name}] Ошибка на странице {page}: {e}")
                         empty_pages_count += 1
                         page += 1
                         time.sleep(LONG_PAUSE_TIME)
@@ -326,20 +318,14 @@ class ProductScraper:
 
             # Сохранение новых товаров в MongoDB
             if scraped_products:
-                mongo_processed, mongo_new = mongodb_handler.save_products(
-                    scraped_products, self.store.store_name
-                )
-                self.logger.info(
-                    f"[{self.store.store_name}] В MongoDB добавлено {mongo_new} новых товаров"
-                )
+                mongo_processed, mongo_new = mongodb_handler.save_products(scraped_products, self.store.store_name)
+                self.logger.info(f"[{self.store.store_name}] В MongoDB добавлено {mongo_new} новых товаров")
             else:
                 mongo_processed, mongo_new = 0, 0
                 self.logger.warning(f"[{self.store.store_name}] Нет новых товаров для сохранения")
 
             self.logger.info(f"[{self.store.store_name}] ИТОГИ:")
-            self.logger.info(
-                f"[{self.store.store_name}]   Всего в базе: {len(all_products)} товаров"
-            )
+            self.logger.info(f"[{self.store.store_name}]   Всего в базе: {len(all_products)} товаров")
             self.logger.info(f"[{self.store.store_name}]   Найдено новых: {new_products_total}")
             self.logger.info(f"[{self.store.store_name}]   Сохранено в MongoDB: {mongo_new}")
 

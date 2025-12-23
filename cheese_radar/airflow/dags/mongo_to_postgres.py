@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from sqlalchemy import Column, DateTime, Integer, String, create_engine, func, text
+from sqlalchemy import (Column, DateTime, Integer, String, create_engine, func,
+                        text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 

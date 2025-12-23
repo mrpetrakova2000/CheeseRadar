@@ -41,9 +41,7 @@ with DAG(
             enum=["scraped_at", "price", "rating", "name"],
             title="Поле для сортировки",
         ),
-        "sort_order": Param(
-            default="desc", type="string", enum=["asc", "desc"], title="Порядок сортировки"
-        ),
+        "sort_order": Param(default="desc", type="string", enum=["asc", "desc"], title="Порядок сортировки"),
         "limit": Param(default=100, type="integer", minimum=1, maximum=1000, title="Лимит записей"),
         "json_indent": Param(
             default=2,
@@ -98,9 +96,7 @@ with DAG(
                 latest_record = collection.find_one(find_query, sort=[("scraped_at", -1)])
                 if isinstance(latest_record["scraped_at"], str):
                     # Парсим строку в datetime
-                    latest_time = datetime.strptime(
-                        latest_record["scraped_at"], "%Y-%m-%d %H:%M:%S"
-                    )
+                    latest_time = datetime.strptime(latest_record["scraped_at"], "%Y-%m-%d %H:%M:%S")
                 else:
                     # Если уже datetime, используем как есть
                     latest_time = latest_record["scraped_at"]
@@ -203,9 +199,7 @@ with DAG(
             "status": "success",
             "metadata": {
                 "timestamp": datetime.now().isoformat(),
-                "execution_id": context.get("ti", {}).execution_date.isoformat()
-                if context.get("ti")
-                else None,
+                "execution_id": context.get("ti", {}).execution_date.isoformat() if context.get("ti") else None,
                 "dag_run_id": context.get("dag_run", {}).run_id if context.get("dag_run") else None,
                 "params_used": result.get("params_used", {}),
                 "statistics": {
@@ -220,14 +214,10 @@ with DAG(
         }
 
         if has_more:
-            formatted_result["metadata"]["statistics"]["hidden_records"] = (
-                len(data_to_display) - max_sample
-            )
+            formatted_result["metadata"]["statistics"]["hidden_records"] = len(data_to_display) - max_sample
 
         # Форматируем в JSON
-        pretty_json = json.dumps(
-            formatted_result, indent=json_indent, ensure_ascii=False, default=str, sort_keys=True
-        )
+        pretty_json = json.dumps(formatted_result, indent=json_indent, ensure_ascii=False, default=str, sort_keys=True)
 
         return pretty_json
 

@@ -43,9 +43,7 @@ with DAG(
             enum=["grid", "simple", "github", "psql", "pipe", "orgtbl", "latex", "html"],
             title="Формат таблицы",
         ),
-        "max_table_rows": Param(
-            default=10, type="integer", minimum=1, maximum=50, title="Максимум строк в таблице"
-        ),
+        "max_table_rows": Param(default=10, type="integer", minimum=1, maximum=50, title="Максимум строк в таблице"),
         "truncate_text": Param(default=True, type="boolean", title="Обрезать длинный текст"),
         "max_text_length": Param(
             default=30, type="integer", minimum=10, maximum=100, title="Максимальная длина текста"
@@ -140,9 +138,7 @@ with DAG(
             if not column_names:
                 raise ValueError(f"Таблица {schema_name}.{table_name} не найдена или пуста")
 
-            logger.info(
-                f"Таблица {schema_name}.{table_name}: {len(column_names)} столбцов - {column_names}"
-            )
+            logger.info(f"Таблица {schema_name}.{table_name}: {len(column_names)} столбцов - {column_names}")
 
             # Простой SQL: SELECT * с лимитом
             sql_query = f"""
@@ -175,9 +171,7 @@ with DAG(
                 total_row = count_result.fetchone()
                 total_count = total_row[0] if total_row else 0
 
-            logger.info(
-                f"Таблица: {schema_name}.{table_name}, всего записей: {total_count}, выбрано: {len(results)}"
-            )
+            logger.info(f"Таблица: {schema_name}.{table_name}, всего записей: {total_count}, выбрано: {len(results)}")
 
             return {
                 "status": "success",

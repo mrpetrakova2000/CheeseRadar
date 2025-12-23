@@ -15,9 +15,7 @@ def setup_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
@@ -93,9 +91,7 @@ def simulate_human_mouse_movement(driver):
             for step in range(steps):
                 step_x = last_x + (x - last_x) * (step / steps)
                 step_y = last_y + (y - last_y) * (step / steps)
-                actions.move_to_element_with_offset(
-                    driver.find_element(By.TAG_NAME, "body"), step_x, step_y
-                )
+                actions.move_to_element_with_offset(driver.find_element(By.TAG_NAME, "body"), step_x, step_y)
                 actions.pause(random.uniform(0.01, 0.05))
 
             last_x, last_y = x, y
@@ -196,9 +192,7 @@ def simulate_reading_time(driver, min_time=2, max_time=5):
                 time.sleep(0.3)
             elif action == "click":
                 try:
-                    elements = driver.find_elements(
-                        By.CSS_SELECTOR, "a, button, div[role='button']"
-                    )
+                    elements = driver.find_elements(By.CSS_SELECTOR, "a, button, div[role='button']")
                     if elements:
                         random.choice(elements[:5]).click()
                         time.sleep(random.uniform(0.5, 1.5))
@@ -226,17 +220,13 @@ def pyaterochka_anti_ban_delay(driver, page_num=None, is_session_break=False):
         # Базовое время ожидания с рандомизацией
         if page_num is None or page_num == 1:
             # Для первой страницы больше времени
-            base_wait = random.uniform(
-                PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"]
-            )
+            base_wait = random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"])
             logger.info(f"[Пятерочка] Задержка для страницы: {base_wait:.1f} сек")
         else:
             # Для последующих страниц меньше времени (но с вариацией)
             base_multiplier = 0.7 + (random.random() * 0.3)  # 0.7-1.0
             base_wait = (
-                random.uniform(
-                    PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"]
-                )
+                random.uniform(PYATEROCHKA_TIMING["MIN_PAGE_LOAD"], PYATEROCHKA_TIMING["MAX_PAGE_LOAD"])
                 * base_multiplier
             )
             logger.info(f"[Пятерочка] Задержка для страницы {page_num}: {base_wait:.1f} сек")
@@ -260,9 +250,7 @@ def pyaterochka_anti_ban_delay(driver, page_num=None, is_session_break=False):
                 simulate_human_mouse_movement(driver)
                 time.sleep(random.uniform(0.5, 1.5))
 
-            elif (
-                action == "scroll" and random.random() < PYATEROCHKA_TIMING["RANDOM_SCROLL_CHANCE"]
-            ):
+            elif action == "scroll" and random.random() < PYATEROCHKA_TIMING["RANDOM_SCROLL_CHANCE"]:
                 random_scroll_behavior(driver)
                 time.sleep(random.uniform(0.5, 1.5))
 

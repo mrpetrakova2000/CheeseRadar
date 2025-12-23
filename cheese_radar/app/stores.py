@@ -55,9 +55,7 @@ class MagnitScraper(StoreScraper):
 
         shop_code = os.getenv("MAGNIT_SHOP_CODE", "161924")
         try:
-            driver.add_cookie(
-                {"name": "shopCode", "value": shop_code, "domain": ".magnit.ru", "path": "/"}
-            )
+            driver.add_cookie({"name": "shopCode", "value": shop_code, "domain": ".magnit.ru", "path": "/"})
             time.sleep(COOKIE_PAUSE_TIME)
         except Exception as e:
             self.logger.error(f"[{self.store_name}] Не удалось установить cookie shopCode: {e}")
@@ -115,9 +113,7 @@ class PerekrestokScraper(StoreScraper):
         # Проверка доступа
         page_source = driver.page_source.lower()
         if "forbidden" in page_source or "проверка безопасности" in page_source:
-            self.logger.error(
-                f"[{self.store_name}] 403! Cookie устарела - обнови её вручную в браузере"
-            )
+            self.logger.error(f"[{self.store_name}] 403! Cookie устарела - обнови её вручную в браузере")
             raise Exception("Cookie устарела")
         else:
             self.logger.info(f"[{self.store_name}] Начало парсинга")
@@ -212,9 +208,7 @@ class LentaScraper(StoreScraper):
                     self.logger.debug(f"[{self.store_name}] Установлен cookie: {cookie['name']}")
                     time.sleep(random.uniform(0.1, 0.3))
                 except Exception as e:
-                    self.logger.error(
-                        f"[{self.store_name}] Не удалось установить cookie {cookie['name']}: {e}"
-                    )
+                    self.logger.error(f"[{self.store_name}] Не удалось установить cookie {cookie['name']}: {e}")
 
             self.logger.info(f"[{self.store_name}] Обновление страницы...")
             driver.refresh()
@@ -225,11 +219,7 @@ class LentaScraper(StoreScraper):
 
             # Проверяем успешность загрузки
             page_source = driver.page_source
-            if (
-                "403" in page_source
-                or "Forbidden" in page_source
-                or "Доступ запрещен" in page_source
-            ):
+            if "403" in page_source or "Forbidden" in page_source or "Доступ запрещен" in page_source:
                 self.logger.warning(f"[{self.store_name}] Обнаружена ошибка 403, пробуем обойти...")
                 self._bypass_403(driver)
 

@@ -65,9 +65,7 @@ class MongoDBHandler:
 
             if batch_to_insert:
                 result = self.collection.insert_many(batch_to_insert, ordered=False)
-                self.logger.info(
-                    f"[{store_name}] В MongoDB записано {len(result.inserted_ids)} товаров"
-                )
+                self.logger.info(f"[{store_name}] В MongoDB записано {len(result.inserted_ids)} товаров")
                 return total_processed, len(result.inserted_ids)
 
             return total_processed, 0
@@ -83,11 +81,7 @@ class MongoDBHandler:
             return []
 
         try:
-            products = list(
-                self.collection.find({"store": store_name}, {"_id": 0})
-                .sort("scraped_at", -1)
-                .limit(limit)
-            )
+            products = list(self.collection.find({"store": store_name}, {"_id": 0}).sort("scraped_at", -1).limit(limit))
 
             self.logger.info(f"Загружено {len(products)} товаров для магазина {store_name}")
             return products

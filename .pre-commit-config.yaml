@@ -5,21 +5,6 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
 
-  - repo: local
-    hooks:
-      - id: pylint-autofix
-        name: autopep8 fixes
-        entry: bash
-        language: system
-        types: [python]
-        pass_filenames: false
-        args: 
-          - "-c"
-          - |
-            pip install autopep8
-            autopep8 --in-place --recursive .
-        always_run: true
-
   - repo: https://github.com/psf/black
     rev: 23.12.1
     hooks:
