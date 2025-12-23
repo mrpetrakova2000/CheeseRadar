@@ -4,47 +4,47 @@ STORE_URLS = {
     "pyaterochka": "https://5ka.ru/catalog/syr--251C13095/",
     "magnit": "https://magnit.ru/catalog/63991-testmmsyry?shopCode={shop_code}&shopType=1",
     "perekrestok": "https://www.perekrestok.ru/cat/c/122/syr",
-    "lenta": "https://lenta.com/catalog/syry-2/"
+    "lenta": "https://lenta.com/catalog/syry-2/",
 }
 
 SELECTORS = {
     "pyaterochka": {
-        "product": lambda tag: tag.get('data-qa', '') and re.compile(r'product-card-\d+$').match(tag.get('data-qa', '')),
+        "product": lambda tag: tag.get("data-qa", "") and re.compile(r"product-card-\d+$").match(tag.get("data-qa", "")),
         "name": ".css-ijz3vq",
         "price": ".css-1j4x839",
         "price_cents": ".css-30bcam",
         "discount": ".css-1mt5fo7",
-        "rating": ".css-1seh83q"
+        "rating": ".css-1seh83q",
     },
     "magnit": {
-        "product": '.unit-catalog-product-preview',
-        "name": '.unit-catalog-product-preview-title',
-        "price": '.unit-catalog-product-preview-prices__regular',
-        "discount": '.unit-catalog-product-preview__discount',
-        "rating": '.unit-catalog-product-preview-rating-score',
-        "weight": '.unit-catalog-product-preview-unit-value'
+        "product": ".unit-catalog-product-preview",
+        "name": ".unit-catalog-product-preview-title",
+        "price": ".unit-catalog-product-preview-prices__regular",
+        "discount": ".unit-catalog-product-preview__discount",
+        "rating": ".unit-catalog-product-preview-rating-score",
+        "weight": ".unit-catalog-product-preview-unit-value",
     },
     "perekrestok": {
         "product": ".product-card",
         "name": ".product-card__title",
         "price": ".price-new",
         "discount": ".product-card__badge",
-        "rating": ".rating-value"
+        "rating": ".rating-value",
     },
     "lenta": {
-        "product": 'lu-product-card',
-        "name": '.card-name_content',
-        "price": '.main-price',
-        "discount": '.discount-badge',
-        "rating": '.rating-number'
-    }
+        "product": "lu-product-card",
+        "name": ".card-name_content",
+        "price": ".main-price",
+        "discount": ".discount-badge",
+        "rating": ".rating-number",
+    },
 }
 
 PAGINATION_PARAMS = {
     "pyaterochka": "?page=",
     "magnit": "&page=",
     "perekrestok": "",
-    "lenta": "/page/"
+    "lenta": "/page/",
 }
 
 PAGE_LOAD_PAUSE_TIME = 10
@@ -55,10 +55,10 @@ LONG_PAUSE_TIME = 10
 SCROLL_PAUSE_TIME = 3
 
 PYATEROCHKA_TIMING = {
-    "MIN_PAGE_LOAD": 12,           
-    "MAX_PAGE_LOAD": 25,           
-    "MIN_BETWEEN_PAGES": 5,        
-    "MAX_BETWEEN_PAGES": 15,       
+    "MIN_PAGE_LOAD": 12,
+    "MAX_PAGE_LOAD": 25,
+    "MIN_BETWEEN_PAGES": 5,
+    "MAX_BETWEEN_PAGES": 15,
     "RANDOM_MOUSE_MOVE": 0.8,
     "RANDOM_SCROLL_CHANCE": 0.7,
     "MOUSE_MOVE_DELAY": 0.3,

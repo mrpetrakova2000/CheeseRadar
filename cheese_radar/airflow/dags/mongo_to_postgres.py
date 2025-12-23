@@ -1,11 +1,10 @@
-import os
 import logging
+import os
 from datetime import datetime, timedelta
-from sqlalchemy import func
 
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from sqlalchemy import Column, Integer, String, DateTime, text, create_engine
+from sqlalchemy import Column, DateTime, Integer, String, create_engine, func, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -18,7 +17,7 @@ Base = declarative_base()
 
 class Product(Base):
     __tablename__ = "products"
-    __table_args__ = {'schema': 'raw'}
+    __table_args__ = {"schema": "raw"}
 
     id = Column(Integer, primary_key=True)
     product_id = Column(String)
@@ -35,8 +34,8 @@ class Product(Base):
 def clean_price(price):
     try:
         if isinstance(price, str):
-            price = price.replace('руб', '').replace('₽', '').replace(' ', '')
-            price = price.replace(',', '.')
+            price = price.replace("руб", "").replace("₽", "").replace(" ", "")
+            price = price.replace(",", ".")
         return float(price)
     except:
         return 0.0
@@ -51,7 +50,7 @@ def move_products_to_postgres(store_name=None):
             f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
             f"@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}",
             pool_pre_ping=True,
-            connect_args={'connect_timeout': 30}
+            connect_args={"connect_timeout": 30},
         )
 
         # Пробное подключение к PostgreSQL
@@ -61,12 +60,13 @@ def move_products_to_postgres(store_name=None):
 
     except Exception as e:
         logger.error(f"Ошибка подключения к PostgreSQL: {e}")
-        logger.error(f"Параметры: host={os.getenv('POSTGRES_HOST')}, "
-                     f"port={os.getenv('POSTGRES_PORT')}, db={os.getenv('POSTGRES_DB')}")
+        logger.error(
+            f"Параметры: host={os.getenv('POSTGRES_HOST')}, " f"port={os.getenv('POSTGRES_PORT')}, db={os.getenv('POSTGRES_DB')}"
+        )
         return {
             "status": "error",
             "store": store_name or "all",
-            "error": f"PostgreSQL connection failed: {str(e)}"
+            "error": f"PostgreSQL connection failed: {str(e)}",
         }
 
     try:
@@ -75,10 +75,10 @@ def move_products_to_postgres(store_name=None):
             port=int(os.getenv("MONGO_PORT")),
             username=os.getenv("MONGO_INITDB_ROOT_USERNAME"),
             password=os.getenv("MONGO_INITDB_ROOT_PASSWORD"),
-            serverSelectionTimeoutMS=5000
+            serverSelectionTimeoutMS=5000,
         )
 
-        client.admin.command('ping')
+        client.admin.command("ping")
         logger.info("MongoDB подключен успешно")
 
     except Exception as e:
@@ -86,7 +86,7 @@ def move_products_to_postgres(store_name=None):
         return {
             "status": "error",
             "store": store_name or "all",
-            "error": f"MongoDB connection failed: {str(e)}"
+            "error": f"MongoDB connection failed: {str(e)}",
         }
 
     Base.metadata.create_all(engine)
@@ -119,21 +119,24 @@ def move_products_to_postgres(store_name=None):
         # Добавляем фильтр по времени для инкрементальной загрузки
         if load_from_time:
             if isinstance(load_from_time, datetime):
-                load_from_str = load_from_time.strftime('%Y-%m-%d %H:%M:%S')
+                load_from_str = load_from_time.strftime("%Y-%m-%d %H:%M:%S")
                 query["scraped_at"] = {"$gt": load_from_str}
             else:
                 query["scraped_at"] = {"$gt": load_from_time}
 
-        mongo_data = collection.find(query, {
-            "_id": 1,
-            "name": 1,
-            "price": 1,
-            "discount": 1,
-            "rating": 1,
-            "store": 1,
-            "date_time": 1,
-            "scraped_at": 1
-        })
+        mongo_data = collection.find(
+            query,
+            {
+                "_id": 1,
+                "name": 1,
+                "price": 1,
+                "discount": 1,
+                "rating": 1,
+                "store": 1,
+                "date_time": 1,
+                "scraped_at": 1,
+            },
+        )
 
         # Перенос данных
         count = 0
@@ -157,7 +160,7 @@ def move_products_to_postgres(store_name=None):
                     rating=str(item.get("rating", "")) if item.get("rating") else None,
                     store=str(item.get("store", "")),
                     date_time=str(item.get("date_time", "")),
-                    scraped_at=item.get("scraped_at")
+                    scraped_at=item.get("scraped_at"),
                 )
                 session.add(product)
                 count += 1
@@ -181,17 +184,13 @@ def move_products_to_postgres(store_name=None):
             "status": "success",
             "store": store_name or "all",
             "transferred": count,
-            "skipped": skipped
+            "skipped": skipped,
         }
 
     except Exception as e:
         logger.error(f"Критическая ошибка: {e}")
         session.rollback()
-        return {
-            "status": "error",
-            "store": store_name or "all",
-            "error": str(e)
-        }
+        return {"status": "error", "store": store_name or "all", "error": str(e)}
 
     finally:
         client.close()

@@ -1,7 +1,7 @@
-from abc import ABC
 import os
-from dotenv import load_dotenv
+from abc import ABC
 
+from dotenv import load_dotenv
 from utils import *
 
 load_dotenv()
@@ -55,12 +55,7 @@ class MagnitScraper(StoreScraper):
 
         shop_code = os.getenv("MAGNIT_SHOP_CODE", "161924")
         try:
-            driver.add_cookie({
-                "name": "shopCode",
-                "value": shop_code,
-                "domain": ".magnit.ru",
-                "path": "/"
-            })
+            driver.add_cookie({"name": "shopCode", "value": shop_code, "domain": ".magnit.ru", "path": "/"})
             time.sleep(COOKIE_PAUSE_TIME)
         except Exception as e:
             self.logger.error(f"[{self.store_name}] Не удалось установить cookie shopCode: {e}")
@@ -94,14 +89,16 @@ class PerekrestokScraper(StoreScraper):
         time.sleep(PAGE_LOAD_PAUSE_TIME)
 
         try:
-            driver.add_cookie({
-                "name": "session",
-                "value": self.SESSION_COOKIE,
-                "domain": "www.perekrestok.ru",
-                "path": "/",
-                "secure": True,
-                "httpOnly": False
-            })
+            driver.add_cookie(
+                {
+                    "name": "session",
+                    "value": self.SESSION_COOKIE,
+                    "domain": "www.perekrestok.ru",
+                    "path": "/",
+                    "secure": True,
+                    "httpOnly": False,
+                }
+            )
             self.logger.info(f"[{self.store_name}] Cookie успешно вставлена")
         except Exception as e:
             self.logger.error(f"[{self.store_name}] Не удалось вставить cookie: {e}")
@@ -146,7 +143,7 @@ class LentaScraper(StoreScraper):
             return f"{self.base_url}page/{page}/"
 
     def before_scrape(self, driver):
-        """Настройка сессии для Ленты """
+        """Настройка сессии для Ленты"""
         self.logger.info(f"[{self.store_name}] Настройка сессии для Ленты...")
 
         try:
@@ -155,14 +152,15 @@ class LentaScraper(StoreScraper):
             time.sleep(BEFORE_SCRAPE_PAUSE_TIME)
 
             # Устанавливаем дополнительные headers через JavaScript
-            driver.execute_script("""
+            driver.execute_script(
+                """
                 Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
                 Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
                 Object.defineProperty(navigator, 'languages', {get: () => ['ru-RU', 'ru', 'en-US', 'en']});
-                
+
                 // Добавляем дополнительные свойства для обхода защиты
                 window.chrome = {runtime: {}};
-                
+
                 // Меняем User-Agent если нужно
                 const originalUserAgent = navigator.userAgent;
                 Object.defineProperty(navigator, 'userAgent', {
@@ -170,7 +168,8 @@ class LentaScraper(StoreScraper):
                         return originalUserAgent.replace(/HeadlessChrome\\/[\\d.]+/, 'Chrome/');
                     }
                 });
-            """)
+            """
+            )
 
             # Основная страница Ленты
             driver.get("https://lenta.com/")
@@ -186,26 +185,21 @@ class LentaScraper(StoreScraper):
                     "domain": ".lenta.com",
                     "path": "/",
                     "secure": True,
-                    "httpOnly": False
+                    "httpOnly": False,
                 },
-                {
-                    "name": "App_Cache_CitySlug",
-                    "value": "spb",
-                    "domain": ".lenta.com",
-                    "path": "/"
-                },
+                {"name": "App_Cache_CitySlug", "value": "spb", "domain": ".lenta.com", "path": "/"},
                 {
                     "name": "App_Cache_City",
                     "value": """{"centerLat":"59.93909600","centerLng":"30.31587100","id":3,"isDefault":false,"mainDomain":false,"name":"Санкт-Петербург и область","slug":"spb"}""",
                     "domain": ".lenta.com",
-                    "path": "/"
+                    "path": "/",
                 },
                 {
                     "name": "App_Cache_MissionAddressMode",
                     "value": """{"t":"pickup","ids":false,"ma":{"i":3241,"a":"0214","t":"TK214","af":"Санкт-Петербург, п. Бугры, Южная ул., 5","ri":3,"mt":"HM","s":false}}""",
                     "domain": ".lenta.com",
-                    "path": "/"
-                }
+                    "path": "/",
+                },
             ]
 
             for cookie in cookies_to_set:
@@ -239,12 +233,14 @@ class LentaScraper(StoreScraper):
             scroll_steps = [300, 500, 200, 400, 600]
 
             for step in scroll_steps:
-                driver.execute_script(f"""
+                driver.execute_script(
+                    f"""
                     window.scrollBy({{
                         top: {step},
                         behavior: 'smooth'
                     }});
-                """)
+                """
+                )
                 time.sleep(random.uniform(0.5, 1.5))
 
             driver.execute_script("window.scrollTo({top: 200, behavior: 'smooth'});")
@@ -254,8 +250,8 @@ class LentaScraper(StoreScraper):
             window_size = driver.get_window_size()
 
             for _ in range(3):
-                x = random.randint(50, window_size['width'] - 50)
-                y = random.randint(50, window_size['height'] - 100)
+                x = random.randint(50, window_size["width"] - 50)
+                y = random.randint(50, window_size["height"] - 100)
                 actions.move_by_offset(x, y)
                 actions.pause(random.uniform(0.1, 0.5))
 
@@ -271,11 +267,13 @@ class LentaScraper(StoreScraper):
 
             # 1. Меняем User-Agent
             new_ua = get_random_user_agent()
-            driver.execute_script(f"""
+            driver.execute_script(
+                f"""
                 Object.defineProperty(navigator, 'userAgent', {{
                     get: () => '{new_ua}'
                 }});
-            """)
+            """
+            )
             self.logger.info(f"[{self.store_name}] User-Agent изменен на: {new_ua[:50]}...")
 
             # 2. Меняем размер окна
@@ -300,7 +298,8 @@ class LentaScraper(StoreScraper):
                 time.sleep(5)
 
             # 5. Добавляем Referer header через JavaScript
-            driver.execute_script("""
+            driver.execute_script(
+                """
                 // Создаем XMLHttpRequest с нужными headers
                 const oldSend = XMLHttpRequest.prototype.send;
                 XMLHttpRequest.prototype.send = function(body) {
@@ -309,7 +308,7 @@ class LentaScraper(StoreScraper):
                     this.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
                     oldSend.call(this, body);
                 };
-                
+
                 const oldFetch = window.fetch;
                 window.fetch = function(...args) {
                     if (args[1]) {
@@ -321,7 +320,8 @@ class LentaScraper(StoreScraper):
                     }
                     return oldFetch.apply(this, args);
                 };
-            """)
+            """
+            )
 
             self.logger.info(f"[{self.store_name}] Завершена попытка обхода 403")
 

@@ -1,7 +1,8 @@
-import requests
 import logging
-from time import sleep
 import os
+from time import sleep
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()

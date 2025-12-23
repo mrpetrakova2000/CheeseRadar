@@ -1,6 +1,8 @@
 from __future__ import annotations
-from datetime import timedelta, datetime
+
 import logging
+from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 
@@ -10,16 +12,16 @@ DBT_PROJECT_DIR = "/opt/airflow/dbt"
 DBT_PROFILE = "cheese_radar"
 
 with DAG(
-        dag_id="dbt_cheese_pipeline",
-        description="ETL пайплайн для данных о сырах",
-        schedule_interval="0 */12 * * *",
-        start_date=datetime(2025, 12, 10),
-        catchup=False,
-        default_args={
-            "retries": 2,
-            "retry_delay": timedelta(minutes=5),
-        },
-        tags=["dbt", "cheese", "analytics", "prices"],
+    dag_id="dbt_cheese_pipeline",
+    description="ETL пайплайн для данных о сырах",
+    schedule_interval="0 */12 * * *",
+    start_date=datetime(2025, 12, 10),
+    catchup=False,
+    default_args={
+        "retries": 2,
+        "retry_delay": timedelta(minutes=5),
+    },
+    tags=["dbt", "cheese", "analytics", "prices"],
 ) as dag:
     t_dbt_deps = BashOperator(
         task_id="dbt_deps",
@@ -96,18 +98,18 @@ with DAG(
         bash_command=f"""
         cd {DBT_PROJECT_DIR} && \
         edr report \
-         --profiles-dir .  
+         --profiles-dir .
         """,
     )
 
     (
-            t_dbt_deps
-            >> t_dbt_debug
-            >> t_dbt_elementary_init
-            >> t_dbt_run_stg
-            >> t_dbt_run_ods
-            >> t_dbt_run_dm
-            >> t_dbt_test_dm
-            >> t_dbt_docs_generate
-            >> t_dbt_edr_report
+        t_dbt_deps
+        >> t_dbt_debug
+        >> t_dbt_elementary_init
+        >> t_dbt_run_stg
+        >> t_dbt_run_ods
+        >> t_dbt_run_dm
+        >> t_dbt_test_dm
+        >> t_dbt_docs_generate
+        >> t_dbt_edr_report
     )

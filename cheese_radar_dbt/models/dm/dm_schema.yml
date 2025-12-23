@@ -3,6 +3,25 @@ version: 2
 models:
   - name: dm_cheese_actual_prices
     description: "Актуальный срез данных о сырах с последней загрузки"
+    tests:
+      - elementary.all_columns_anomalies
+      - elementary.freshness_anomalies:
+          timestamp_column: "snapshot_created_at"
+          config:
+            severity: warn
+      - elementary.dimension_anomalies:
+          dimensions: ["name"]
+      - elementary.schema_changes_from_baseline
+      - elementary.event_freshness_anomalies:
+          event_timestamp_column: "snapshot_created_at"
+          config:
+            severity: warn
+      - elementary.volume_anomalies:
+          time_bucket:
+            period: day
+            count: 1
+          config:
+            severity: warn
     columns:
       - name: name
         description: "Название продукта"
