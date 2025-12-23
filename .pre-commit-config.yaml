@@ -1,28 +1,36 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
   - repo: local
     hooks:
       - id: pylint-autofix
-        name: pylint autofix
-        entry: python -m autopep8 --in-place --recursive
+        name: autopep8 fixes
+        entry: bash
         language: system
         types: [python]
         pass_filenames: false
-        args: [
-          "--select=W0104,W1201,W1309,W1508,W0719,W0107",
-          "--max-line-length=120",
-          "--ignore=E501"
-        ]
-  
+        args: 
+          - "-c"
+          - |
+            pip install autopep8
+            autopep8 --in-place --recursive .
+        always_run: true
+
   - repo: https://github.com/psf/black
     rev: 23.12.1
     hooks:
       - id: black
-  
+        args: [--line-length=120]
+
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
-  
+
   - repo: local
     hooks:
       - id: pylint
