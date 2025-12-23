@@ -1,6 +1,14 @@
-repos:
-  - repo: https://github.com/pycqa/pylint
-    rev: v3.0.3
-    hooks:
-      - id: pylint
-        args: [--rcfile=.pylintrc]  
+  precommit_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install pre-commit and hooks
+        run: |
+          pip install pre-commit==3.4.0
+          pre-commit install
+      - name: Run pre-commit
+        run: |
+          pre-commit run --all-files
